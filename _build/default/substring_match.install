@@ -1,0 +1,8 @@
+lib: [
+  "_build/install/default/lib/substring_match/META"
+  "_build/install/default/lib/substring_match/dune-package"
+  "_build/install/default/lib/substring_match/opam"
+]
+bin: [
+  "_build/install/default/bin/substring_match"
+]
