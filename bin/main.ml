@@ -7,7 +7,7 @@ open Regex;;
 
 let a = Ukkonen.create "abca"
 
-let () = match a.tree_root.node_type with
+let rec g = match a.tree_root.node_type with
   | Leaf l -> print_int l
   | 
 
@@ -29,8 +29,10 @@ let dfa = compile r |> determinize
 
 (* let () = Dfa.accept dfa (explode ("a")) |> print_bool *)
 
-(* let take_a_step_forward_in_dfa = fun dfa char -> 
-  if dfa.finals *)
+let dfa_one_step dfa char =
+  if StateSet.mem (Char.code char |> Int32.of_int) dfa.finals then 
+
+
 
 module B = Bmap(CharString)
 
