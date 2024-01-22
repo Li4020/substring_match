@@ -3,7 +3,7 @@
 # Shared cache: disabled
 # Workspace root: /home/thelema/substring_match
 # Auto-detected concurrency: 8
-$ /home/thelema/.opam/4.14.1/bin/ocamlc.opt -config > /tmp/dune_74f20b_output
+$ /home/thelema/.opam/4.14.1/bin/ocamlc.opt -config > /tmp/dune_fe44bf_output
 # Dune context:
 #  { name = "default"
 #  ; kind = "default"
@@ -98,5 +98,12 @@ $ /home/thelema/.opam/4.14.1/bin/ocamlc.opt -config > /tmp/dune_74f20b_output
 #      }
 #  ; instrument_with = []
 #  }
+$ (cd _build/default && /home/thelema/.opam/4.14.1/bin/ocamldep.opt -modules -impl lib/suffix_tree.ml) > _build/default/lib/.lib.objs/lib__Suffix_tree.impl.d
+$ (cd _build/default && /home/thelema/.opam/4.14.1/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -A -g -bin-annot -I lib/.lib.objs/byte -I /home/thelema/.opam/4.14.1/lib/re-nfa -no-alias-deps -opaque -open Lib -o lib/.lib.objs/byte/lib__Suffix_tree.cmo -c -impl lib/suffix_tree.ml)
+$ (cd _build/default && /home/thelema/.opam/4.14.1/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -A -g -bin-annot -I lib/.lib.objs/byte -I /home/thelema/.opam/4.14.1/lib/re-nfa -no-alias-deps -opaque -open Lib -o lib/.lib.objs/byte/lib__Test.cmo -c -impl lib/test.ml)
+$ (cd _build/default && /home/thelema/.opam/4.14.1/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -A -g -bin-annot -I bin/.main.eobjs/byte -I /home/thelema/.opam/4.14.1/lib/re-nfa -I lib/.lib.objs/byte -no-alias-deps -opaque -o bin/.main.eobjs/byte/dune__exe__Main.cmi -c -intf bin/main.mli)
+$ (cd _build/default && /home/thelema/.opam/4.14.1/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -A -g -I lib/.lib.objs/byte -I lib/.lib.objs/native -I /home/thelema/.opam/4.14.1/lib/re-nfa -intf-suffix .ml -no-alias-deps -opaque -open Lib -o lib/.lib.objs/native/lib__Test.cmx -c -impl lib/test.ml)
 $ (cd _build/default && /home/thelema/.opam/4.14.1/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -A -g -I bin/.main.eobjs/byte -I bin/.main.eobjs/native -I /home/thelema/.opam/4.14.1/lib/re-nfa -I lib/.lib.objs/byte -I lib/.lib.objs/native -intf-suffix .ml -no-alias-deps -opaque -o bin/.main.eobjs/native/dune__exe__Main.cmx -c -impl bin/main.ml)
+$ (cd _build/default && /home/thelema/.opam/4.14.1/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -A -g -I lib/.lib.objs/byte -I lib/.lib.objs/native -I /home/thelema/.opam/4.14.1/lib/re-nfa -intf-suffix .ml -no-alias-deps -opaque -open Lib -o lib/.lib.objs/native/lib__Suffix_tree.cmx -c -impl lib/suffix_tree.ml)
+$ (cd _build/default && /home/thelema/.opam/4.14.1/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -A -g -a -o lib/lib.cmxa lib/.lib.objs/native/lib.cmx lib/.lib.objs/native/lib__Dfa.cmx lib/.lib.objs/native/lib__Suffix_tree.cmx lib/.lib.objs/native/lib__Test.cmx)
 $ (cd _build/default && /home/thelema/.opam/4.14.1/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -A -g -o bin/main.exe /home/thelema/.opam/4.14.1/lib/re-nfa/re-nfa.cmxa lib/lib.cmxa bin/.main.eobjs/native/dune__exe__Main.cmx)
