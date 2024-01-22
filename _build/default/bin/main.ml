@@ -5,9 +5,12 @@ open Dfa;;
 open Nfa;;
 open Regex;;
 
-let a = Ukkonen.create "abca"
+(* let a = Ukkonen.create "00010" *)
 
-let () = print_int a.tree_root.path_position;;
+(* let rec g = match a.tree_root.node_type with
+  | Leaf l -> print_int l
+  |  *)
+
 
 (* type state = int32 *)
 let explode s =
@@ -18,16 +21,31 @@ let explode s =
 
 (* module SS = StateSet *)
 
-let r = parse "(a|b)*"
+let r = parse "0*1"
 
+let nfa = compile r
 let dfa = compile r |> determinize
 
 let b = StateSet.iter (fun x -> Int32.to_int x |> print_int |> print_newline ) dfa.finals
 
-let () = Dfa.accept dfa (explode ("a")) |> print_bool
+(* let () = Dfa.accept dfa (explode ("a")) |> print_bool *)
 
-(* let take_a_step_forward_in_dfa = fun dfa char -> 
-  if dfa.finals *)
+let () = Int32.to_int (dfa.start) |> print_int |> print_newline
+
+(* let () =  *)
+
+let dfa_one_step (dfa: Dfa.dfa) present char =
+  dfa.next present |> CharMap.find char
+
+let () = dfa_one_step (dfa: Dfa.dfa) dfa.start '0' |> Int32.to_int |> print_int |> print_newline
+
+(* let () = nfa.next (StateSet.choose nfa.start) |>  *)
+
+(* CharMap.iter (fun x y -> print_char x; print_char ','; Int32.to_int y |> print_int |> print_newline) *)
+
+    (* if StateSet.mem (Char.code char |> Int32.of_int) dfa.finals
+      then true
+      else  *)
 
 module B = Bmap(CharString)
 
