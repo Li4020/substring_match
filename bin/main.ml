@@ -5,7 +5,7 @@ open Dfa;;
 open Nfa;;
 open Regex;;
 
-(* let a = Ukkonen.create "00010" *)
+let suf_tree = Ukkonen.create "00010"
 
 (* let rec g = match a.tree_root.node_type with
   | Leaf l -> print_int l
@@ -34,10 +34,22 @@ let () = Int32.to_int (dfa.start) |> print_int |> print_newline
 
 (* let () =  *)
 
-let dfa_one_step (dfa: Dfa.dfa) present char =
-  dfa.next present |> CharMap.find char
+module B = Bmap(CharString)
 
-let () = dfa_one_step (dfa: Dfa.dfa) dfa.start '0' |> Int32.to_int |> print_int |> print_newline
+let dfa_one_step (dfa: Dfa.dfa) present char =
+  try Some (CharMap.find char (dfa.next present)) with
+    | Not_found -> None
+
+let suf_tree_one_step suf_tree (present: Ukkonen.node) char =
+  match present.node_type with
+    | Leaf l -> None
+    | Branch b -> Some (B.find b char)
+
+(* match (dfa, suf_tree) with
+  | (a, b) ->
+  |  *)
+
+(* let () = dfa_one_step (dfa: Dfa.dfa) dfa.start '0' |> Int32.to_int |> print_int |> print_newline *)
 
 (* let () = nfa.next (StateSet.choose nfa.start) |>  *)
 
@@ -47,7 +59,7 @@ let () = dfa_one_step (dfa: Dfa.dfa) dfa.start '0' |> Int32.to_int |> print_int 
       then true
       else  *)
 
-module B = Bmap(CharString)
+
 
 let search (t: Ukkonen.t) =
   let m = String.length t.tree_string in
