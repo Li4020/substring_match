@@ -32,8 +32,6 @@ let b = StateSet.iter (fun x -> Int32.to_int x |> print_int |> print_newline ) d
 
 let () = Int32.to_int (dfa.start) |> print_int |> print_newline
 
-(* let () =  *)
-
 module B = Bmap(CharString)
 
 let dfa_one_step (dfa: Dfa.dfa) present char =
@@ -60,8 +58,25 @@ let suf_tree_one_step suf_tree (present: Ukkonen.node) char =
       else  *)
 
 
+let search (dfa: Dfa.dfa) (suf_tree: Ukkonen.t) =
+  let m = String.length suf_tree.tree_string in
+  (* let next_state = dfa_one_step dfa  *)
+  let rec search' (state: Nfa.state) (node: Ukkonen.node) =
+  (* match state, node.node_type with *)
+  (* match dfa_one_step (dfa: Dfa.dfa) present char, suf_tree_one_step suf_tree (present: Ukkonen.node) char with *)
 
-let search (t: Ukkonen.t) =
+    | 
+
+
+
+
+
+
+
+
+
+
+let search_a (t: Ukkonen.t) =
   let m = String.length t.tree_string in
   let rec search' (node: Ukkonen.node) depth =
     let e = ref 0 in
