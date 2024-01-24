@@ -34,15 +34,27 @@ let () = Int32.to_int (dfa.start) |> print_int |> print_newline
 
 module B = Bmap(CharString)
 
+(* Someは行き先あり、Noneは行き先なし *)
 let dfa_one_step (dfa: Dfa.dfa) present char =
-  try Some (CharMap.find char (dfa.next present)) with
+  try
+    let next = CharMap.iter (fun x y -> Int32.to_int y |> print_int |> print_newline |> print_newline ) (dfa.next present); CharMap.find char (dfa.next present) in
+    if StateSet.mem present dfa.finals then None else Some next
+  with
     | Not_found -> None
 
-let suf_tree_one_step suf_tree (present: Ukkonen.node) char =
-  match present.node_type with
-    | Leaf l -> None
-    | Branch b -> Some (B.find b char)
 
+let aaa = dfa_one_step (dfa: Dfa.dfa) dfa.start '0'
+
+let suf_tree_one_step suf_tree (present: Ukkonen.node) char =
+  try
+    match present.node_type with
+      | Leaf l -> None
+      | Branch b -> B.iter (fun x (y: Ukkonen.node) -> y.label_start |> print_int; print_char x |> print_newline) b; Some (B.find b char) |> Option.get |> (fun (x: Ukkonen.node) -> print_int x.label_start; Some x)
+  with
+    | Not_found -> None
+
+
+let aaaaa = suf_tree_one_step suf_tree suf_tree.tree_root '0'
 (* match (dfa, suf_tree) with
   | (a, b) ->
   |  *)
@@ -61,11 +73,19 @@ let suf_tree_one_step suf_tree (present: Ukkonen.node) char =
 let search (dfa: Dfa.dfa) (suf_tree: Ukkonen.t) =
   let m = String.length suf_tree.tree_string in
   (* let next_state = dfa_one_step dfa  *)
-  let rec search' (state: Nfa.state) (node: Ukkonen.node) =
-  (* match state, node.node_type with *)
-  (* match dfa_one_step (dfa: Dfa.dfa) present char, suf_tree_one_step suf_tree (present: Ukkonen.node) char with *)
+  let rec search' (present_state: Nfa.state) (present_node: Ukkonen.node) =
+    for i = 0 to 1 do
+      let next_state = dfa_one_step (dfa: Dfa.dfa) present_state (Int.to_string i) in
+      let next_node = suf_tree_one_step suf_tree (present_node: Ukkonen.node) char in
+    (* match state, node.node_type with *)
+    (* match dfa_one_step (dfa: Dfa.dfa) present char, suf_tree_one_step suf_tree (present: Ukkonen.node) char with *)
+      match next_state, next_node with
+        | None, None -> if StateSet.mem present_state dfa.finals then true else false
+        | None, Some nn -> if StateSet.mem present_state dfa.finals then true else false
+        | Some ns, None -> [0,1].map() search' next_state present_node 
+        | Some ns, Some nn -> search' next_state next_node
+    done;
 
-    | 
 
 
 
@@ -75,8 +95,7 @@ let search (dfa: Dfa.dfa) (suf_tree: Ukkonen.t) =
 
 
 
-
-let search_a (t: Ukkonen.t) =
+(* let search_a (t: Ukkonen.t) =
   let m = String.length t.tree_string in
   let rec search' (node: Ukkonen.node) depth =
     let e = ref 0 in
@@ -105,7 +124,7 @@ let search_a (t: Ukkonen.t) =
         done;
         B.iter (fun _ n -> search' n (depth+1)) b
   in
-  search' t.tree_root 0
+  search' t.tree_root 0 *)
 
 (* let () = search a *)
 
