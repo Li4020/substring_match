@@ -1,4 +1,4 @@
-(lang dune 3.11)
+(lang dune 3.14)
 
 (name substring_match)
 

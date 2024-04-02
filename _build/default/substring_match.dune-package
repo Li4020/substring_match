@@ -1,4 +1,0 @@
-(lang dune 3.11)
-(name substring_match)
-(sections (lib .) (bin ../../bin))
-(files (lib (META dune-package opam)) (bin (substring_match)))

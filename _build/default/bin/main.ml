@@ -73,13 +73,18 @@ let aaaaa = suf_tree_one_step suf_tree suf_tree.tree_root '0'
 (* let search (dfa: Dfa.dfa) (suf_tree: Ukkonen.t) =
   let m = String.length suf_tree.tree_string in
   (* let next_state = dfa_one_step dfa  *)
-  let rec search' (present_state: Nfa.state) (present_node: Ukkonen.node) char =
-    let next_state = dfa_one_step (dfa: Dfa.dfa) present_state char in
-    let next_node = suf_tree_one_step suf_tree (present_node: Ukkonen.node) char in
-  (* match state, node.node_type with *)
-  (* match dfa_one_step (dfa: Dfa.dfa) present char, suf_tree_one_step suf_tree (present: Ukkonen.node) char with *)
-    match next_state, next_node with
-      | None, None -> if StateSet.mem next dfa.finals then true else  *)
+  let rec search' (present_state: Nfa.state) (present_node: Ukkonen.node) =
+    for i = 0 to 1 do
+      let next_state = dfa_one_step (dfa: Dfa.dfa) present_state (Int.to_string i) in
+      let next_node = suf_tree_one_step suf_tree (present_node: Ukkonen.node) char in
+    (* match state, node.node_type with *)
+    (* match dfa_one_step (dfa: Dfa.dfa) present char, suf_tree_one_step suf_tree (present: Ukkonen.node) char with *)
+      match next_state, next_node with
+        | None, None -> if StateSet.mem present_state dfa.finals then true else false
+        | None, Some nn -> if StateSet.mem present_state dfa.finals then true else false
+        | Some ns, None -> [0,1].map() search' next_state present_node 
+        | Some ns, Some nn -> search' next_state next_node
+    done; *)
 
 
 
