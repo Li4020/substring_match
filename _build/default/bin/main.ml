@@ -7,6 +7,10 @@ open Regex;;
 
 let suf_tree = Ukkonen.create "00010"
 
+(* let suf_tree = Ukkonen.create "00010" *)
+let out = Ukkonen.print Format.std_formatter (Ukkonen.create "00010")
+
+
 (* let rec g = match a.tree_root.node_type with
   | Leaf l -> print_int l
   |  *)
@@ -26,30 +30,33 @@ let r = parse "0*1"
 let nfa = compile r
 let dfa = compile r |> determinize
 
-let b = StateSet.iter (fun x -> Int32.to_int x |> print_int |> print_newline ) dfa.finals
+(* let b = StateSet.iter (fun x -> Int32.to_int x |> print_int |> print_newline ) dfa.finals *)
 
 (* let () = Dfa.accept dfa (explode ("a")) |> print_bool *)
 
-let () = Int32.to_int (dfa.start) |> print_int |> print_newline
+(* let () = Int32.to_int (dfa.start) |> print_int |> print_newline *)
 
 module B = Bmap(CharString)
 
+(* ok *)
 (* Someは行き先あり、Noneは行き先なし *)
+(* 状態は1から始まる、つまりdfa.startが1 *)
 let dfa_one_step (dfa: Dfa.dfa) present char =
   try
-    let next = CharMap.iter (fun x y -> Int32.to_int y |> print_int |> print_newline |> print_newline ) (dfa.next present); CharMap.find char (dfa.next present) in
-    if StateSet.mem present dfa.finals then None else Some next
+    let next = CharMap.find char (dfa.next present) in
+    if StateSet.mem present dfa.finals then None else (Int32.to_int next |> print_int ; Some next)
   with
     | Not_found -> None
 
 
 let aaa = dfa_one_step (dfa: Dfa.dfa) dfa.start '0'
 
+(* okだと思ったがちょっと怪しいぞ *)
 let suf_tree_one_step suf_tree (present: Ukkonen.node) char =
   try
     match present.node_type with
       | Leaf l -> None
-      | Branch b -> B.iter (fun x (y: Ukkonen.node) -> y.label_start |> print_int; print_char x |> print_newline) b; Some (B.find b char) |> Option.get |> (fun (x: Ukkonen.node) -> print_int x.label_start; Some x)
+      | Branch b -> Some (B.find b char)
   with
     | Not_found -> None
 
@@ -70,6 +77,8 @@ let aaaaa = suf_tree_one_step suf_tree suf_tree.tree_root '0'
       else  *)
 
 
+
+(* トライ木を探索する、それと同時にdfaを動かす *)
 (* let search (dfa: Dfa.dfa) (suf_tree: Ukkonen.t) =
   let m = String.length suf_tree.tree_string in
   (* let next_state = dfa_one_step dfa  *)

@@ -3,8 +3,20 @@
 (** @canonical Lib.Dfa *)
 module Dfa = Lib__Dfa
 
+(** @canonical Lib.Match *)
+module Match = Lib__Match
+
+(** @canonical Lib.Onfa *)
+module Onfa = Lib__Onfa
+
 (** @canonical Lib.Suffix_tree *)
 module Suffix_tree = Lib__Suffix_tree
 
 (** @canonical Lib.Test *)
 module Test = Lib__Test
+
+(** @canonical Lib.Trie *)
+module Trie = Lib__Trie
+
+(** @canonical Lib.Trie_test *)
+module Trie_test = Lib__Trie_test
