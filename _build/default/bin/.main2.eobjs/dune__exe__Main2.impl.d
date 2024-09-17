@@ -1,1 +1,1 @@
-bin/main2.ml: Dfa Format Lib Nfa Regex
+bin/main2.ml: Array Char Dfa Format Int Lib List Nfa Regex Set String
