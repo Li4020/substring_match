@@ -1,2 +1,2 @@
 (test
- (name substring_match))
+ (name test))

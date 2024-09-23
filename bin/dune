@@ -1,4 +1,4 @@
 (executable
  (public_name substring_match)
- (name main2)
+ (name main)
  (libraries lib))
