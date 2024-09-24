@@ -1,4 +1,4 @@
-(lang dune 3.14)
+(lang dune 3.16)
 
 (name substring_match)
 
@@ -19,7 +19,7 @@
  (name substring_match)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune re-nfa)
+ (depends ocaml dune)
  (tags
   (topics "to describe" your project)))
 

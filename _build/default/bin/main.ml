@@ -1,8 +1,5 @@
 open Lib;;
 open Format;;
-open Dfa;;
-open Nfa;;
-open Regex;;
 open Type;;
 open Print;;
 
@@ -227,6 +224,8 @@ let match_onfa dir o_regex str oracle_matrix =
   done;
   tape
 
+
+
 type regex =
   | Eps
   | Char of char
@@ -242,13 +241,18 @@ type regex =
   | NLB of regex
 
 
+(* index out of boundsのエラーを解決する *)
+
 
 let rec eval_aux (regex: regex) str o_arity o_matrix: int * o_regex =
   match regex with
     | Eps -> (0, Eps)
-    | Char a -> (0, Char a)
+    | Char a -> 
+      print_endline (Char.escaped a);
+      (0, Char a)
     | Any -> (0, Any)
     | Seq (r1, r2) ->
+      print_endline "Seq";
       let (k1, s1) = eval_aux r1 str o_arity o_matrix in
       let (k2, s2) = eval_aux r2 str (o_arity + k1) o_matrix in
       (k1 + k2, Seq (s1, s2))
@@ -266,26 +270,35 @@ let rec eval_aux (regex: regex) str o_arity o_matrix: int * o_regex =
       let (k, s) = eval_aux r1 str o_arity o_matrix in
       (k, Plus s)
     | PLA r1 ->
-      o_matrix := Array.append !o_matrix [||];
-      !o_matrix.(Array.length !o_matrix - 1) <- eval false r1 str;
+      print_endline "PLA";
+      let a = eval false r1 str in
+      Array.iter (fun x -> x |> print_int; print_string ", ") a;
+      Dynarray.add_last !o_matrix (eval false r1 str);
+      (* o_matrix := Array.append !o_matrix [||];
+      !o_matrix.(Array.length !o_matrix - 1) <- eval false r1 str; *)
       (1, Query (true, o_arity))
     | NLA r1 ->
-      o_matrix := Array.append !o_matrix [||];
-      !o_matrix.(Array.length !o_matrix - 1) <- eval false r1 str;
+      Dynarray.add_last !o_matrix (eval false r1 str);
+      (* o_matrix := Array.append !o_matrix [||];
+      !o_matrix.(Array.length !o_matrix - 1) <- eval false r1 str; *)
       (1, Query (false, o_arity))
     | PLB r1 ->
-      o_matrix := Array.append !o_matrix [||];
-      !o_matrix.(Array.length !o_matrix - 1) <- eval true r1 str;
+      Dynarray.add_last !o_matrix (eval true r1 str);
+      (* o_matrix := Array.append !o_matrix [||];
+      !o_matrix.(Array.length !o_matrix - 1) <- eval true r1 str; *)
       (1, Query (true, o_arity))
     | NLB r1 ->
-      o_matrix := Array.append !o_matrix [||];
-      !o_matrix.(Array.length !o_matrix - 1) <- eval true r1 str;
+      Dynarray.add_last !o_matrix (eval true r1 str);
+      (* o_matrix := Array.append !o_matrix [||];
+      !o_matrix.(Array.length !o_matrix - 1) <- eval true r1 str; *)
       (1, Query (false, o_arity))
 
 and eval dir regex str =
-  let o_matrix: int array array ref = ref [||] in
-  let (o_arity, sub_regex) = eval_aux regex str 0 o_matrix in
-  match_onfa dir sub_regex str !o_matrix
+  let o_matrix: int array Dynarray.t ref = ref (Dynarray.create ()) in
+  let (o_arity, o_regex) = eval_aux regex str 0 o_matrix in
+  print_endline (string_of_int o_arity);
+  Dynarray.iter (fun x -> Array.iter (fun y -> y |> print_int; print_string ", ") x; print_string "\n") !o_matrix;
+  match_onfa dir o_regex str (Dynarray.to_array !o_matrix)
 
 let re: regex = PLA (Seq (Char 'a', Seq (Char 'b', Char 'c')))
 

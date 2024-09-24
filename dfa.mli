@@ -1,4 +1,4 @@
-(** Deterministic finite automata *)
+Deterministic finite automata
 
 type dfa = {
   start : Nfa.state;
@@ -29,4 +29,4 @@ val determinize : Nfa.nfa -> dfa
  *)
 
 val inject : dfa -> Nfa.nfa
-(** [inject dfa] is the deterministic NFA corresponding to [dfa] *)
+(** [inject dfa] is the deterministic NFA corresponding to [dfa]

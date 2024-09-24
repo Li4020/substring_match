@@ -1,4 +1,4 @@
-(** Deterministic finite automata *)
+Deterministic finite automata
 
 type state = Nfa.state
 module StateSet = Nfa.StateSet
