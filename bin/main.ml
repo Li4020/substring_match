@@ -112,10 +112,9 @@ let o_regex: o_regex = Seq (Star Any, (Seq (Query (true, 0), Seq (Char 'b', Seq 
 
 (* let o_regex = Alt (Query (true, 0), Query (true, 1)) *)
 
-let string = "bbbcabbcbbdbbbc"
 (* let oracle_arity = 2 *)
 
-let oracle_matrix = [|[|0; 0; 0; 0; 0; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1|]; [|1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 0; 0; 0; 0; 0|]|]
+(* let oracle_matrix = [|[|0; 0; 0; 0; 0; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1|]; [|1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 0; 0; 0; 0; 0|]|] *)
 
 
 
@@ -182,6 +181,9 @@ let next onfa current_states sym ith_oracle_vals =
       StateSet.union (next_states x) acc
     ) current_states StateSet.empty
   in
+  (* print_char (sym);
+  print_newline ();
+  StateSet.iter (fun x -> Printf.printf "%d" x; Printf.printf ", ") (beta_reachable onfa next_states_from_current_states ith_oracle_vals); *)
   beta_reachable onfa next_states_from_current_states ith_oracle_vals
 
 let transpose matrix =
@@ -205,22 +207,26 @@ let rec reverse_o_regex: o_regex -> o_regex = function
   | Plus a -> Plus (reverse_o_regex a)
 
 let match_onfa dir o_regex str oracle_matrix =
+  let oracle_matrix = if Array.length oracle_matrix = 0 then [|Array.make ((String.length str) + 1) 0|] else oracle_matrix in
   let str_length = String.length str in
   let () = assert (Array.length oracle_matrix.(0) = str_length + 1) in
   let oracle_matrix' = transpose oracle_matrix in
   let onfa = if dir then compile o_regex else compile (reverse_o_regex o_regex) in
+  (* print onfa; *)
   let i = ref (if dir then 0 else str_length) in
+  let i' = ref (if dir then 0 else str_length - 1) in
   let states = ref (initial onfa oracle_matrix'.(!i)) in
   let tape = Array.make (str_length + 1) 0 in
   let init_tape = if not (StateSet.disjoint !states (onfa.final)) then tape.(!i) <- 1 else tape.(!i) <- 0 in
   let d = if dir then 1 else -1 in
   for j = 0 to str_length - 1 do
-    states := next onfa !states str.[!i] oracle_matrix'.(!i + d);
+    states := next onfa !states str.[!i'] oracle_matrix'.(!i + d);
     if not (StateSet.disjoint !states (onfa.final)) then
-      tape.(!i + 1) <- 1
+      tape.(!i + d) <- 1
     else
-      tape.(!i + 1) <- 0;
-    i := !i + d
+      tape.(!i + d) <- 0;
+    i := !i + d;
+    i' := !i' + d
   done;
   tape
 
@@ -241,20 +247,25 @@ type regex =
   | NLB of regex
 
 
-(* index out of boundsのエラーを解決する *)
+let o_matrix: int array Dynarray.t ref = ref (Dynarray.create ())
 
 
 let rec eval_aux (regex: regex) str o_arity o_matrix: int * o_regex =
+  let set_tape tape =
+    Dynarray.add_last !o_matrix tape;
+    (* Dynarray.iter (fun x -> Array.iter (fun y -> y |> print_int; print_string ", ") x; print_string "\n") !o_matrix *)
+  in
   match regex with
     | Eps -> (0, Eps)
-    | Char a -> 
-      print_endline (Char.escaped a);
+    | Char a ->
       (0, Char a)
     | Any -> (0, Any)
     | Seq (r1, r2) ->
-      print_endline "Seq";
       let (k1, s1) = eval_aux r1 str o_arity o_matrix in
       let (k2, s2) = eval_aux r2 str (o_arity + k1) o_matrix in
+      print_o_regex s1;
+      print_o_regex s2;
+      print_newline ();
       (k1 + k2, Seq (s1, s2))
     | Alt (r1, r2) ->
       let (k1, s1) = eval_aux r1 str o_arity o_matrix in
@@ -269,46 +280,75 @@ let rec eval_aux (regex: regex) str o_arity o_matrix: int * o_regex =
     | Plus r1 ->
       let (k, s) = eval_aux r1 str o_arity o_matrix in
       (k, Plus s)
+    (* ?= *)
     | PLA r1 ->
-      print_endline "PLA";
-      let a = eval false r1 str in
-      Array.iter (fun x -> x |> print_int; print_string ", ") a;
-      Dynarray.add_last !o_matrix (eval false r1 str);
-      (* o_matrix := Array.append !o_matrix [||];
-      !o_matrix.(Array.length !o_matrix - 1) <- eval false r1 str; *)
+      let pla_tape = eval false r1 str in
+      set_tape pla_tape;
       (1, Query (true, o_arity))
+    (* ?! *)
     | NLA r1 ->
-      Dynarray.add_last !o_matrix (eval false r1 str);
-      (* o_matrix := Array.append !o_matrix [||];
-      !o_matrix.(Array.length !o_matrix - 1) <- eval false r1 str; *)
+      let nla_tape = eval false r1 str in
+      set_tape nla_tape;
       (1, Query (false, o_arity))
+    (* ?<= *)
     | PLB r1 ->
-      Dynarray.add_last !o_matrix (eval true r1 str);
-      (* o_matrix := Array.append !o_matrix [||];
-      !o_matrix.(Array.length !o_matrix - 1) <- eval true r1 str; *)
+      let plb_tape = eval true r1 str in
+      set_tape plb_tape;
       (1, Query (true, o_arity))
+    (* ?<! *)
     | NLB r1 ->
-      Dynarray.add_last !o_matrix (eval true r1 str);
-      (* o_matrix := Array.append !o_matrix [||];
-      !o_matrix.(Array.length !o_matrix - 1) <- eval true r1 str; *)
+      let nlb_tape = eval true r1 str in
+      set_tape nlb_tape;
       (1, Query (false, o_arity))
 
 and eval dir regex str =
-  let o_matrix: int array Dynarray.t ref = ref (Dynarray.create ()) in
   let (o_arity, o_regex) = eval_aux regex str 0 o_matrix in
-  print_endline (string_of_int o_arity);
-  Dynarray.iter (fun x -> Array.iter (fun y -> y |> print_int; print_string ", ") x; print_string "\n") !o_matrix;
+  (* print (compile o_regex); *)
   match_onfa dir o_regex str (Dynarray.to_array !o_matrix)
 
-let re: regex = PLA (Seq (Char 'a', Seq (Char 'b', Char 'c')))
+(* let mat : int array Dynarray.t ref = ref (Dynarray.create ())
+let rec a x =
+  (* let mat : int array Dynarray.t ref = ref (Dynarray.create ()) in *)
+  Dynarray.add_last !mat [|x|];
+  b mat x
+and b mat x =
+  Dynarray.iter (fun x -> Array.iter (fun y -> y |> print_int; print_string ", ") x; print_string "\n") !mat;
+  if x > 0 then a (x-1) else !mat
+
+let () = Dynarray.iter (fun x -> Array.iter (fun y -> y |> print_int; print_string ", ") x; print_string "\n") (a 5) *)
 
 
-let () = Array.iter (fun x -> x |> print_int; print_string ", ") (eval true re string)
 
 
+(* let re: regex = PLA (Seq (Char 'a', Seq (Char 'b', Char 'c'))) *)
+let re: regex = Seq (Char 'c', PLA (Seq (Char 'a', Char 'b')))
+
+let re2 : regex = Seq (Star Any, (Seq (PLB (Seq (Star Any, Seq (Char 'a', Star Any))), Seq (Char 'b', Seq (Char 'c', (PLA (Seq (Star Any, Seq (Char 'd', Star Any)))))))))
+
+let re3 : regex = Seq (Star Any, (Seq (PLB (Seq (Star Any, Seq (Char 'a', Star Any))), Seq (Char 'b', (PLA (Seq (Star Any, Seq (Char 'd', Star Any))))))))
+
+let re4 : regex = Seq (Star Any, (Seq (PLB (Seq (Star Any, Seq (Char 'a', Star Any))), Seq (Char 'b', Seq (Char 'b', (PLA (Seq (Star Any, Seq (Char 'd', Star Any)))))))))
+
+
+let string = "bbbcabbcbbdbbbc"
+
+
+let () = Array.iter (fun x -> x |> print_int; print_string ", ") (eval true re4 string)
+
+let () = print_endline string
+
+
+
+
+
+
+
+(*
 
 
 (* ================================================================================ *)
+let () = print_newline ()
+let () = print_endline "===================================================================="
 
 let () = print_o_regex o_regex; print_newline ()
 
@@ -328,3 +368,5 @@ let () = print_o_regex (reverse_o_regex o_regex); print_newline ()
 
 let () = Array.iter (fun x -> x |> print_int; print_string ", ") (match_onfa true o_regex string oracle_matrix)
 
+
+*)
