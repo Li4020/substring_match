@@ -2,6 +2,8 @@ open Lib;;
 open Format;;
 open Type;;
 open Print;;
+open Trie;;
+
 
 let null_nfa = {
   states = StateSet.of_list [0; 1];
@@ -333,13 +335,106 @@ let re4 : regex = Seq (Star Any, (Seq (PLB (Seq (Star Any, Seq (Char 'a', Star A
 let string = "bbbcabbcbbdbbbc"
 
 
-let () = Array.iter (fun x -> x |> print_int; print_string ", ") (eval true re4 string)
+let () = Array.iter (fun x -> x |> print_int; print_string ", ") (eval true re4 string) |> print_newline
 
 let () = print_endline string
 
 
 
+(* 新しいtrie木を作成 *)
+(* let tree = create ();; *)
 
+(* "010"をtrie木に追加 *)
+(* let tree = set tree ['0'; '1'; '0'] "value_010";; *)
+
+(* "10"をtrie木に追加 *)
+(* let tree = set tree ['1'; '0'] "value_10";; *)
+
+(* "0"をtrie木に追加 *)
+(* let tree = set tree ['0'] "value_0";; *)
+
+(* 結果を確認するための関数 *)
+let print_tree tree =
+  iter (fun key value ->
+    match value with
+    | None -> ()
+    | Some v -> Printf.printf "Key: %c, Value: %d\n" key v
+  ) tree;;
+
+
+let rec print_trie ?(indent=0) tree =
+  let indent_str = String.make indent ' ' in
+  let print_node node =
+    let value_str = 
+      match node.Node.value with
+      | None -> -1
+      | Some v -> v
+    in
+    Printf.printf "%sKey: %c, Value: %d\n" indent_str node.Node.key value_str;
+    print_trie ~indent:(indent + 2) node.Node.children
+  in
+  List.iter print_node tree
+
+(* trie木を表示 *)
+(* let () =print_trie tree *)
+
+let create_suffix_list string =
+  let string_list = List.of_seq (String.to_seq string) in
+  let rec aux acc str =
+    match str with
+    | [] -> []
+    | h :: tl ->
+      ((String.of_seq (List.to_seq tl)) :: acc) @ aux acc tl
+  in
+  aux [string] string_list
+
+(* let create_suffix_list string =
+  let string_list = List.of_seq (String.to_seq string) in
+  let rec aux acc str =
+    match str with
+    | ['$'] -> acc
+    | h :: tl ->
+      aux ((String.of_seq (List.to_seq tl)) :: acc) tl
+  in
+  List.rev (aux [string ^ "$"] (string_list @ ['$'])) *)
+
+let create_suffix_list string =
+  let string_list = List.of_seq (String.to_seq string) in
+  let rec aux acc str =
+    match str with
+    | [] -> acc
+    | h :: tl ->
+      aux ((String.of_seq (List.to_seq tl)) :: acc) tl
+  in
+  List.rev (List.tl (aux [string] string_list))
+
+let create_suffix_tree string pos =
+  let init_tree: (char, int) Node.t list = create () in
+  let set_one_suffix tree suffix number =
+    let char_list = suffix |> String.to_seq |> List.of_seq in
+    set tree char_list number
+  in
+  let rec eliminate list pos =
+    if pos = 0 then [] else
+    match list with
+    | [] -> []
+    | h :: tl -> h :: eliminate tl (pos - 1)
+  in
+  (* List.iter (fun x -> print_int x) (eliminate [1;2;3;4;5] 6); *)
+  let suffix_list = eliminate (create_suffix_list string) pos in
+  let number_list = List.mapi (fun i v -> i + 1) suffix_list in
+  List.fold_left2 (fun acc x y -> set_one_suffix acc x y) init_tree suffix_list number_list
+
+let str = "01100100010111"
+(* let str = "01100100" *)
+
+(* let () = List.iter (fun x -> print_string x; print_string "\n") (create_suffix_list str)
+let () = print_int (List.length (create_suffix_list str)) *)
+
+let suffix_tree = create_suffix_tree str 8
+
+(* let () = List.iter (fun x -> print_char x.Node.key; print_int (Option.get x.Node.value)) suffix_tree *)
+let () = print_trie suffix_tree
 
 
 
