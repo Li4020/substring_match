@@ -2,6 +2,7 @@ open Lib;;
 open Format;;
 open Type;;
 open Print;;
+open Queue;;
 open Trie;;
 
 
@@ -435,7 +436,82 @@ let () = print_int (List.length (create_suffix_list str)) *)
 let suffix_tree = create_suffix_tree str 8
 
 (* let () = List.iter (fun x -> print_char x.Node.key; print_int (Option.get x.Node.value)) suffix_tree *)
-let () = print_trie suffix_tree
+(* let () = print_trie suffix_tree *)
+
+
+
+
+
+let tree_thesis = create ()
+let tree_thesis = set tree_thesis ['0'; '0'; '0'] 7
+let tree_thesis = set tree_thesis ['0'; '0'; '1'; '0'; '0'] 4
+let tree_thesis = set tree_thesis ['0'; '0'; '1'; '0'; '1'] 8
+let tree_thesis = set tree_thesis ['0'; '1'; '0'] 5
+let tree_thesis = set tree_thesis ['0'; '1'; '1'] 1
+let tree_thesis = set tree_thesis ['1'; '0'; '0'; '0'] 6
+let tree_thesis = set tree_thesis ['1'; '0'; '0'; '1'] 3
+let tree_thesis = set tree_thesis ['1'; '1'] 2
+
+let () = print_trie tree_thesis
+
+
+
+match_onfa
+
+
+(* ノードを幅優先に探索する関数 *)
+let bfs_trie (root: ('a, 'b) Node.t list) (o_regex: o_regex) oracle_matrix =
+  (* キューを初期化し、ルートのリストをすべてキューに追加 *)
+  let queue = Queue.create () in
+  List.iter (fun node -> Queue.push ([node.Node.key], node) queue) root;
+
+  (* match_onfaから一部分移植 *)
+  let oracle_matrix = if Array.length oracle_matrix = 0 then [|Array.make ((String.length str) + 1) 0|] else oracle_matrix in
+  let oracle_matrix' = transpose oracle_matrix in
+  let onfa = compile o_regex in
+  (* print onfa; *)
+  let i = ref 0 in
+  (* いらなさそう *)
+  let i' = ref 0 in
+  let states = ref (initial onfa oracle_matrix'.(!i)) in
+  (* これどうする？ *)
+  (* 最後に作るテープarrayじゃなくてlistで管理してよくないか？disjointなら0を、そうでないなら1をくっつける *)
+  let tape = Array.make (str_length + 1) 0 in
+  let init_tape = if not (StateSet.disjoint !states (onfa.final)) then tape.(!i) <- 1 else tape.(!i) <- 0 in
+  let d = 1 in
+
+
+  (* 幅優先探索を再帰的に行う補助関数 *)
+  let rec aux () =
+    if Queue.is_empty queue then
+      ()
+    else
+      let (path, current) = Queue.pop queue in
+      (* 現在のノードを処理 *)
+      (match current.Node.value with
+      | None -> ()  (* 値がない場合は何もしない *)
+      | Some value -> 
+          Printf.printf "Found value: %s at path: %s\n" 
+            (string_of_int value) (* 'b型に応じて出力を変更 *)
+            (String.concat "->" (List.map (String.make 1) path)));
+
+      (* 子ノードをキューに追加 *)
+      List.iter (fun child ->
+        Queue.push (path @ [child.Node.key], child) queue
+      ) current.Node.children;
+
+      (* 再帰呼び出しで次のノードを処理 *)
+      aux ()
+  in
+
+  aux ()  (* 幅優先探索の開始 *)
+
+
+let () = bfs_trie tree_thesis
+
+
+
+
 
 
 
@@ -466,3 +542,7 @@ let () = Array.iter (fun x -> x |> print_int; print_string ", ") (match_onfa tru
 
 
 *)
+
+let o_regex: o_regex = Star (Alt (Char '0', Char '1'))
+
+let () = print (compile o_regex)
