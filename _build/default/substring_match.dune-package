@@ -1,4 +1,4 @@
-(lang dune 3.14)
+(lang dune 3.16)
 (name substring_match)
 (sections (lib .) (bin ../../bin) (doc ../../doc/substring_match))
 (files

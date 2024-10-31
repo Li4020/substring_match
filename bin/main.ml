@@ -156,6 +156,9 @@ let beta_reachable (nfa : onfa) (start_states : StateSet.t) (ith_oracle_vals : i
               match qry with
                 | Q (sgn, o_name) -> ith_oracle_vals.(o_name) = if sgn then 1 else 0
             in
+            (* print_query x.qry;
+            print_bool (is_proceedable x.qry);
+            print_newline (); *)
             if x.q = current && not (StateSet.mem x.q' visited) && is_proceedable x.qry then
               StateSet.add x.q' acc
             else
@@ -215,7 +218,7 @@ let match_onfa dir o_regex str oracle_matrix =
   let () = assert (Array.length oracle_matrix.(0) = str_length + 1) in
   let oracle_matrix' = transpose oracle_matrix in
   let onfa = if dir then compile o_regex else compile (reverse_o_regex o_regex) in
-  (* print onfa; *)
+  print onfa;
   let i = ref (if dir then 0 else str_length) in
   let i' = ref (if dir then 0 else str_length - 1) in
   let states = ref (initial onfa oracle_matrix'.(!i)) in
@@ -224,6 +227,8 @@ let match_onfa dir o_regex str oracle_matrix =
   let d = if dir then 1 else -1 in
   for j = 0 to str_length - 1 do
     states := next onfa !states str.[!i'] oracle_matrix'.(!i + d);
+    (* StateSet.iter (fun x -> x |> print_int; print_string ", ") !states;
+    print_newline (); *)
     if not (StateSet.disjoint !states (onfa.final)) then
       tape.(!i + d) <- 1
     else
@@ -231,6 +236,8 @@ let match_onfa dir o_regex str oracle_matrix =
     i := !i + d;
     i' := !i' + d
   done;
+  (* Array.iter (fun x -> x |> print_int; print_string ", ") tape;
+  print_newline (); *)
   tape
 
 
@@ -324,21 +331,72 @@ let () = Dynarray.iter (fun x -> Array.iter (fun y -> y |> print_int; print_stri
 
 
 (* let re: regex = PLA (Seq (Char 'a', Seq (Char 'b', Char 'c'))) *)
-let re: regex = Seq (Char 'c', PLA (Seq (Char 'a', Char 'b')))
+let re: regex = Seq (Star Any, (Seq (Char 'b', Char 'b')))
+
+let re: regex = Seq (PLB (Star Any), (Seq (Char 'b', Char 'b')))
+
+let re: regex = Seq (PLA (Star Any), (Seq (Char 'b', Seq (Char 'b', PLB (Star Any)))))
+
 
 let re2 : regex = Seq (Star Any, (Seq (PLB (Seq (Star Any, Seq (Char 'a', Star Any))), Seq (Char 'b', Seq (Char 'c', (PLA (Seq (Star Any, Seq (Char 'd', Star Any)))))))))
 
 let re3 : regex = Seq (Star Any, (Seq (PLB (Seq (Star Any, Seq (Char 'a', Star Any))), Seq (Char 'b', (PLA (Seq (Star Any, Seq (Char 'd', Star Any))))))))
 
+(* 学会スライドに記載されていた例 *)
 let re4 : regex = Seq (Star Any, (Seq (PLB (Seq (Star Any, Seq (Char 'a', Star Any))), Seq (Char 'b', Seq (Char 'b', (PLA (Seq (Star Any, Seq (Char 'd', Star Any)))))))))
+
+let re4 : regex = Seq (Star Any, (Seq (PLB (Seq (Star Any, Seq (Char 'a', Star Any))), Seq (Char 'b', Seq (Char 'b', (PLA (Seq (Star Any, Seq (Char 'b', Star Any)))))))))
+
+
+let re5 : regex = Seq (Star Any,Seq (Seq (Seq (PLB (Seq (Star Any, Seq (Char '1', Seq (Char '1', Star Any)))), Char '0'), Char '0'), PLA (Seq (Star Any, Seq (Char '1', Seq (Char '0', Seq (Char '0', Star Any)))))))
+
+(* let re6 : regex = Seq (Seq (Seq (PLB (Seq (Star Any, Seq (Char 'b', Seq (Char 'b', Star Any)))), Char 'a'), Char 'a'), PLA (Seq (Star Any, Seq (Char 'b', Seq (Char 'a', Seq (Char 'a', Star Any)))))) *)
 
 
 let string = "bbbcabbcbbdbbbc"
+let string = "01100100010111"
+(* let string = "abbaabaaababbb" *)
 
 
-let () = Array.iter (fun x -> x |> print_int; print_string ", ") (eval true re4 string) |> print_newline
+let () = Array.iter (fun x -> x |> print_int; print_string ", ") (eval true re5 string) |> print_newline
 
 let () = print_endline string
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -371,7 +429,10 @@ let rec print_trie ?(indent=0) tree =
       | None -> -1
       | Some v -> v
     in
-    Printf.printf "%sKey: %c, Value: %d\n" indent_str node.Node.key value_str;
+    let key_sym = node.Node.key |> fst in
+    let key_o_vals = node.Node.key |> snd in
+    let key_o_vals_str = Array.fold_left (fun acc x -> acc ^ (string_of_int x)) "" key_o_vals in
+    Printf.printf "%sKey: %c_%s, Value: %d\n" indent_str key_sym key_o_vals_str value_str;
     print_trie ~indent:(indent + 2) node.Node.children
   in
   List.iter print_node tree
@@ -441,8 +502,11 @@ let suffix_tree = create_suffix_tree str 8
 
 
 
+let om2 = [|[|0; 0; 0; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1|]; [|1; 1; 1; 1; 1; 1; 0; 0; 0; 0; 0; 0; 0; 0; 0;|]|]
 
-let tree_thesis = create ()
+
+
+(* let tree_thesis = create ()
 let tree_thesis = set tree_thesis ['0'; '0'; '0'] 7
 let tree_thesis = set tree_thesis ['0'; '0'; '1'; '0'; '0'] 4
 let tree_thesis = set tree_thesis ['0'; '0'; '1'; '0'; '1'] 8
@@ -450,9 +514,42 @@ let tree_thesis = set tree_thesis ['0'; '1'; '0'] 5
 let tree_thesis = set tree_thesis ['0'; '1'; '1'] 1
 let tree_thesis = set tree_thesis ['1'; '0'; '0'; '0'] 6
 let tree_thesis = set tree_thesis ['1'; '0'; '0'; '1'] 3
-let tree_thesis = set tree_thesis ['1'; '1'] 2
+let tree_thesis = set tree_thesis ['1'; '1'] 2 *)
+
+
+(* let () = print_trie tree_thesis *)
+
+let create_char_list_with_o_vals o_mat pos l =
+  let o_mat' = transpose o_mat in
+  (* let o_vals = o_mat'.(pos + 1) in *)
+  List.mapi (fun i -> fun x -> (x, o_mat'.(pos + i))) l
+
+let a = create_char_list_with_o_vals om2 7 ['0'; '0'; '0']
+
+let () = List.iter (fun (sym, o_vals) -> print_char sym; print_char '_'; Array.iter print_int o_vals; print_char ',') a
+
+
+let tree_thesis = create ()
+let tree_thesis = set tree_thesis (['0'; '0'; '0'] |> create_char_list_with_o_vals om2 7) 7
+let tree_thesis = set tree_thesis (['0'; '0'; '1'; '0'; '0'] |> create_char_list_with_o_vals om2 4) 4
+let tree_thesis = set tree_thesis (['0'; '0'; '1'; '0'; '1'] |> create_char_list_with_o_vals om2 8) 8
+let tree_thesis = set tree_thesis (['0'; '1'; '0'] |> create_char_list_with_o_vals om2 5) 5
+let tree_thesis = set tree_thesis (['0'; '1'; '1'] |> create_char_list_with_o_vals om2 1) 1
+let tree_thesis = set tree_thesis (['1'; '0'; '0'; '0'] |> create_char_list_with_o_vals om2 6) 6
+let tree_thesis = set tree_thesis (['1'; '0'; '0'; '1'] |> create_char_list_with_o_vals om2 3) 3
+let tree_thesis = set tree_thesis (['1'; '1'] |> create_char_list_with_o_vals om2 2) 2
+
 
 let () = print_trie tree_thesis
+
+
+
+
+
+
+
+
+
 
 
 
@@ -460,10 +557,9 @@ match_onfa
 
 
 (* ノードを幅優先に探索する関数 *)
-let bfs_trie (root: ('a, 'b) Node.t list) (o_regex: o_regex) oracle_matrix =
+let bfs_trie (root: ('a, 'b) Node.t list) pos (o_regex: o_regex) oracle_matrix =
   (* キューを初期化し、ルートのリストをすべてキューに追加 *)
   let queue = Queue.create () in
-  List.iter (fun node -> Queue.push ([node.Node.key], node) queue) root;
 
   (* match_onfaから一部分移植 *)
   let oracle_matrix = if Array.length oracle_matrix = 0 then [|Array.make ((String.length str) + 1) 0|] else oracle_matrix in
@@ -476,9 +572,13 @@ let bfs_trie (root: ('a, 'b) Node.t list) (o_regex: o_regex) oracle_matrix =
   let states = ref (initial onfa oracle_matrix'.(!i)) in
   (* これどうする？ *)
   (* 最後に作るテープarrayじゃなくてlistで管理してよくないか？disjointなら0を、そうでないなら1をくっつける *)
-  let tape = Array.make (str_length + 1) 0 in
+  (* リストにそこまでに読んだ文字列を格納する *)
+  let tape = Array.make (pos + 1) 0 in
   let init_tape = if not (StateSet.disjoint !states (onfa.final)) then tape.(!i) <- 1 else tape.(!i) <- 0 in
   let d = 1 in
+
+  (* statesもキューに追加 *)
+  List.iter (fun node -> Queue.push ([node.Node.key], node, states) queue) root;
 
 
   (* 幅優先探索を再帰的に行う補助関数 *)
@@ -486,28 +586,51 @@ let bfs_trie (root: ('a, 'b) Node.t list) (o_regex: o_regex) oracle_matrix =
     if Queue.is_empty queue then
       ()
     else
-      let (path, current) = Queue.pop queue in
+
+
+
+      let (path, current, states) = Queue.pop queue in
+      let sym = current.Node.key |> fst in
+      let o_vals = current.Node.key |> snd in
       (* 現在のノードを処理 *)
-      (match current.Node.value with
+      (* (match current.Node.value with
       | None -> ()  (* 値がない場合は何もしない *)
       | Some value -> 
           Printf.printf "Found value: %s at path: %s\n" 
             (string_of_int value) (* 'b型に応じて出力を変更 *)
-            (String.concat "->" (List.map (String.make 1) path)));
+            (String.concat "->" (List.map (String.make 1) path))); *)
+
+      (* もはやテープ見に行かなくてもいいんだよね *)
+      states := next onfa !states sym o_vals;
 
       (* 子ノードをキューに追加 *)
+      (* pathの情報いる？答え出すだけなら多分いらない *)
       List.iter (fun child ->
-        Queue.push (path @ [child.Node.key], child) queue
+        Queue.push (path @ [child.Node.key], child, states) queue
       ) current.Node.children;
+
+      (* 終了条件を考える *)
+      if not (StateSet.disjoint !states (onfa.final)) then
+        (* とりあえずleafまでくだってvalueを確認する *)
+        (* そのvalueに対応するindexに1を書き込む *)
+        tape.(!i) <- 1
+      else
+        ();
+      (* i := !i + d;
+      i' := !i' + d; *)
+
+      (* 先にleafにたどり着いた場合を考える *)
+
+
 
       (* 再帰呼び出しで次のノードを処理 *)
       aux ()
   in
 
-  aux ()  (* 幅優先探索の開始 *)
+  aux (); tape  (* 幅優先探索の開始 *)
 
 
-let () = bfs_trie tree_thesis
+(* let () = bfs_trie tree_thesis *)
 
 
 
@@ -543,6 +666,6 @@ let () = Array.iter (fun x -> x |> print_int; print_string ", ") (match_onfa tru
 
 *)
 
-let o_regex: o_regex = Star (Alt (Char '0', Char '1'))
+(* let o_regex: o_regex = Star (Alt (Char '0', Char '1'))
 
-let () = print (compile o_regex)
+let () = print (compile o_regex) *)
