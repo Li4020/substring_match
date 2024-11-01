@@ -358,9 +358,27 @@ let string = "01100100010111"
 (* let string = "abbaabaaababbb" *)
 
 
-let () = Array.iter (fun x -> x |> print_int; print_string ", ") (eval true re5 string) |> print_newline
 
-let () = print_endline string
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(* let () = Array.iter (fun x -> x |> print_int; print_string ", ") (eval true re5 string) |> print_newline *)
+
+(* let () = print_endline string *)
 
 
 
@@ -488,13 +506,12 @@ let create_suffix_tree string pos =
 
 (* 子が一つのときは枝刈り *)
 
-let str = "01100100010111"
 (* let str = "01100100" *)
 
 (* let () = List.iter (fun x -> print_string x; print_string "\n") (create_suffix_list str)
 let () = print_int (List.length (create_suffix_list str)) *)
 
-let suffix_tree = create_suffix_tree str 8
+(* let suffix_tree = create_suffix_tree str 8 *)
 
 (* let () = List.iter (fun x -> print_char x.Node.key; print_int (Option.get x.Node.value)) suffix_tree *)
 (* let () = print_trie suffix_tree *)
@@ -526,7 +543,7 @@ let create_char_list_with_o_vals o_mat pos l =
 
 let a = create_char_list_with_o_vals om2 7 ['0'; '0'; '0']
 
-let () = List.iter (fun (sym, o_vals) -> print_char sym; print_char '_'; Array.iter print_int o_vals; print_char ',') a
+(* let () = List.iter (fun (sym, o_vals) -> print_char sym; print_char '_'; Array.iter print_int o_vals; print_char ',') a *)
 
 
 let tree_thesis = create ()
@@ -540,7 +557,12 @@ let tree_thesis = set tree_thesis (['1'; '0'; '0'; '1'] |> create_char_list_with
 let tree_thesis = set tree_thesis (['1'; '1'] |> create_char_list_with_o_vals om2 2) 2
 
 
-let () = print_trie tree_thesis
+(* let () = print_trie tree_thesis *)
+
+
+
+
+let str = "01100100010111"
 
 
 
@@ -549,88 +571,121 @@ let () = print_trie tree_thesis
 
 
 
+(* match_onfa *)
+
+
+let o_regex2: o_regex = Seq (Star Any, (Seq (Query (true, 0), Seq (Char '0', Seq (Char '0', Query (true, 1))))))
+
+(* let o_regex2: o_regex = (Seq (Query (true, 0), Seq (Char '0', Seq (Char '0', Query (true, 1))))) *)
 
 
 
-
-match_onfa
-
-
-(* ノードを幅優先に探索する関数 *)
-let bfs_trie (root: ('a, 'b) Node.t list) pos (o_regex: o_regex) oracle_matrix =
-  (* キューを初期化し、ルートのリストをすべてキューに追加 *)
+let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
   let queue = Queue.create () in
 
-  (* match_onfaから一部分移植 *)
   let oracle_matrix = if Array.length oracle_matrix = 0 then [|Array.make ((String.length str) + 1) 0|] else oracle_matrix in
   let oracle_matrix' = transpose oracle_matrix in
   let onfa = compile o_regex in
   (* print onfa; *)
   let i = ref 0 in
-  (* いらなさそう *)
-  let i' = ref 0 in
+  (* let i' = ref 0 in *)
   let states = ref (initial onfa oracle_matrix'.(!i)) in
-  (* これどうする？ *)
-  (* 最後に作るテープarrayじゃなくてlistで管理してよくないか？disjointなら0を、そうでないなら1をくっつける *)
-  (* リストにそこまでに読んだ文字列を格納する *)
-  let tape = Array.make (pos + 1) 0 in
-  let init_tape = if not (StateSet.disjoint !states (onfa.final)) then tape.(!i) <- 1 else tape.(!i) <- 0 in
-  let d = 1 in
+  let tape = Array.make (String.length str + 1) 0 in
 
-  (* statesもキューに追加 *)
+  StateSet.iter (fun x -> x |> print_int; print_string ", ") onfa.final;
+  print_newline ();
+  print_newline ();
+
+  if not (StateSet.disjoint !states (onfa.final)) then tape.(!i) <- 1 else tape.(!i) <- 0;
+  (* let d = 1 in *)
+
   List.iter (fun node -> Queue.push ([node.Node.key], node, states) queue) root;
 
-
-  (* 幅優先探索を再帰的に行う補助関数 *)
   let rec aux () =
     if Queue.is_empty queue then
       ()
     else
-
-
-
       let (path, current, states) = Queue.pop queue in
       let sym = current.Node.key |> fst in
       let o_vals = current.Node.key |> snd in
-      (* 現在のノードを処理 *)
-      (* (match current.Node.value with
-      | None -> ()  (* 値がない場合は何もしない *)
-      | Some value -> 
-          Printf.printf "Found value: %s at path: %s\n" 
-            (string_of_int value) (* 'b型に応じて出力を変更 *)
-            (String.concat "->" (List.map (String.make 1) path))); *)
 
-      (* もはやテープ見に行かなくてもいいんだよね *)
       states := next onfa !states sym o_vals;
+      StateSet.iter (fun x -> x |> print_int; print_string ", ") !states;
+      print_newline ();
 
-      (* 子ノードをキューに追加 *)
-      (* pathの情報いる？答え出すだけなら多分いらない *)
+      if not (StateSet.disjoint !states (onfa.final)) then
+        let rec dfs (node: ('a, 'b) Node.t) =
+          match node with
+            | { key = _; value = Some v; children = [] } -> [v]
+            | { key = _; value = None; children = [] } -> []
+            | { key = _; value = Some v; children = cs } -> v :: List.concat (List.map dfs cs)
+            | { key = _; value = None; children = cs } -> List.concat (List.map dfs cs)
+        in
+        let value_list = dfs current in
+        List.iter (fun v -> print_int v; print_string ", ") value_list;
+        print_newline ();
+        print_string "match";
+        print_newline ();
+        List.iter (fun v -> tape.(v) <- 1) value_list
+      else
+        ();
+
+      if current.Node.value <> None then
+        let start_pos = Option.get current.Node.value in
+        let str' = String.sub str (start_pos - 1) ((String.length str) - start_pos + 1) in
+        let char_list = List.of_seq (String.to_seq str') in
+        let j = ref (start_pos) in
+        let states' = states in
+        let rec traverse char_list =
+          match char_list with
+          | [] -> ()
+          | h :: t ->
+            states' := next onfa !states h o_vals;
+            if not (StateSet.disjoint !states' (onfa.final)) then
+              (print_int !j;
+              print_newline ();
+              tape.(!j) <- 1)
+            else
+              j := !j + 1;
+              traverse t
+        in
+        (* print_string "leaf"; *)
+        traverse char_list
+      else
+        ();
+
       List.iter (fun child ->
         Queue.push (path @ [child.Node.key], child, states) queue
       ) current.Node.children;
 
-      (* 終了条件を考える *)
-      if not (StateSet.disjoint !states (onfa.final)) then
-        (* とりあえずleafまでくだってvalueを確認する *)
-        (* そのvalueに対応するindexに1を書き込む *)
-        tape.(!i) <- 1
-      else
-        ();
-      (* i := !i + d;
-      i' := !i' + d; *)
-
-      (* 先にleafにたどり着いた場合を考える *)
-
-
-
-      (* 再帰呼び出しで次のノードを処理 *)
       aux ()
   in
+  aux ();
+  tape
 
-  aux (); tape  (* 幅優先探索の開始 *)
+
+let answer = bfs_trie tree_thesis str o_regex2 om2
+
+let () = print_newline ()
+let () = Array.iter (fun x -> x |> print_int; print_string ", ") answer
 
 
-(* let () = bfs_trie tree_thesis *)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
