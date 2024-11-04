@@ -539,11 +539,12 @@ let tree_thesis = set tree_thesis ['1'; '1'] 2 *)
 let create_char_list_with_o_vals o_mat pos l =
   let o_mat' = transpose o_mat in
   (* let o_vals = o_mat'.(pos + 1) in *)
-  List.mapi (fun i -> fun x -> (x, o_mat'.(pos + i))) l
+  (None, o_mat'.(pos - 1)) :: List.mapi (fun i -> fun x -> (Some x, o_mat'.(pos + i))) l
 
 let a = create_char_list_with_o_vals om2 7 ['0'; '0'; '0']
 
 (* let () = List.iter (fun (sym, o_vals) -> print_char sym; print_char '_'; Array.iter print_int o_vals; print_char ',') a *)
+
 
 
 let tree_thesis = create ()
@@ -581,8 +582,10 @@ let o_regex2: o_regex = (Seq (Query (true, 0), Seq (Char '0', Seq (Char '0', Que
 (* let () = print (compile o_regex2) *)
 
 
+let char_of_charoption = function None -> '-' | Some x -> x
 
-let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
+
+let bfs_trie (root: (char option * int array, int) Node.t list) str (o_regex: o_regex) oracle_matrix =
   let queue = Queue.create () in
 
   let oracle_matrix = if Array.length oracle_matrix = 0 then [|Array.make ((String.length str) + 1) 0|] else oracle_matrix in
@@ -592,8 +595,15 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
   let i = ref 0 in
   (* let i' = ref 0 in *)
   (* let states = ref (initial onfa oracle_matrix'.(!i)) in *)
+
+  (* これ0で揃えちゃダメだよね *)
+  (* これトライ木を作る時に、空文字列に対してo_valsをくっつければいいのでは *)
   let init_states = initial onfa oracle_matrix'.(!i) in
+  (* let init_states = initial onfa oracle_matrix'.(!i) in *)
+
   let tape = Array.make (String.length str + 1) 0 in
+  (* let d = 1 in *)
+
 
   (* StateSet.iter (fun x -> x |> print_int; print_string ", ") !states; *)
   (* StateSet.iter (fun x -> x |> print_int; print_string ", ") init_states; *)
@@ -602,11 +612,15 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
   (* StateSet.iter (fun x -> x |> print_int; print_string ", ") onfa.final;
   print_newline ();
   print_newline (); *)
+  let init node =
+    match (node.Node.key: char option * int array) with
+    | None, init_o_vals -> 
+      let init_states = initial onfa init_o_vals in
+      Queue.push ([], node, init_states) queue;
+    | _ -> raise (Failure "init")
+  in
 
-  if not (StateSet.disjoint init_states (onfa.final)) then tape.(!i) <- 1 else tape.(!i) <- 0;
-  (* let d = 1 in *)
-
-  List.iter (fun node -> Queue.push ([node.Node.key], node, init_states) queue) root;
+  List.iter init root;
 
   let rec aux () =
     if Queue.is_empty queue then
@@ -616,18 +630,19 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
       let sym = current.Node.key |> fst in
       let o_vals = current.Node.key |> snd in
 
-      print_char sym;
-      print_char '_';
-      Array.iter (fun x -> print_int x) o_vals;
-      print_newline ();
+      let push_children_to_queue () =
+        if sym <> None then
+          let next_states = next onfa current_states (Option.get sym) o_vals in
+          List.iter (fun child ->
+            Queue.push (path @ [current.Node.key], child, next_states) queue
+          ) current.Node.children;
+        else
+          List.iter (fun child ->
+            Queue.push ([], child, current_states) queue
+          ) current.Node.children;
+      in
 
-      StateSet.iter (fun x -> x |> print_int; print_string ", ") current_states;
-
-      let next_states = next onfa current_states sym o_vals in
-      StateSet.iter (fun x -> x |> print_int; print_string ", ") next_states;
-      print_newline ();
-
-      if not (StateSet.disjoint next_states (onfa.final)) then
+      if not (StateSet.disjoint current_states (onfa.final)) then
         let rec dfs (node: ('a, 'b) Node.t) =
           match node with
             | { key = _; value = Some v; children = [] } -> [v]
@@ -636,7 +651,8 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
             | { key = _; value = None; children = cs } -> List.concat (List.map dfs cs)
         in
         let value_list = dfs current in
-        List.iter (fun (c, arr) -> print_char c; print_string ", ") path;
+        List.iter (fun (c, arr) -> print_char (char_of_charoption c); print_string ", ") path;
+        print_newline ();
         List.iter (fun v -> print_int v; print_string ", ") value_list;
         print_newline ();
         print_string "match";
@@ -655,7 +671,7 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
           match char_list with
           | [] -> ()
           | h :: t ->
-            let states' = next onfa next_states h o_vals in
+            let states' = next onfa current_states h o_vals in
             if not (StateSet.disjoint states' (onfa.final)) then
               (
               (* print_int !j;
@@ -671,9 +687,20 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
       else
         ();
 
-      List.iter (fun child ->
-        Queue.push (path @ [child.Node.key], child, next_states) queue
-      ) current.Node.children;
+      push_children_to_queue ();
+      
+
+      (* print_char sym; *)
+      (* print_char '_';
+      Array.iter (fun x -> print_int x) o_vals;
+      print_newline ();
+
+      StateSet.iter (fun x -> x |> print_int; print_string ", ") current_states;
+
+      StateSet.iter (fun x -> x |> print_int; print_string ", ") current_states;
+      print_newline (); *)
+
+      
 
       aux ()
   in
