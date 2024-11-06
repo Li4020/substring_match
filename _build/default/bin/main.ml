@@ -5,6 +5,8 @@ open Print;;
 open Queue;;
 open Trie;;
 
+(* type char_option_with_end = None | Some of char | End *)
+
 
 let null_nfa = {
   states = StateSet.of_list [0; 1];
@@ -36,7 +38,7 @@ let char_nfa a = {
   final = StateSet.of_list [1];
 }
 
-let reindex_nfa a start ={
+let reindex_nfa a start = {
   states = StateSet.map (fun x -> x + start) a.states;
   alph = a.alph;
   trans = List.map (fun (x: transition) -> {q = x.q + start; sym = x.sym; q' = x.q' + start}) a.trans;
@@ -213,6 +215,7 @@ let rec reverse_o_regex: o_regex -> o_regex = function
   | Plus a -> Plus (reverse_o_regex a)
 
 let match_onfa dir o_regex str oracle_matrix =
+  (* -1の方がよいかも？ *)
   let oracle_matrix = if Array.length oracle_matrix = 0 then [|Array.make ((String.length str) + 1) 0|] else oracle_matrix in
   let str_length = String.length str in
   let () = assert (Array.length oracle_matrix.(0) = str_length + 1) in
@@ -359,7 +362,7 @@ let string = "01100100010111"
 
 
 
-
+let om2 = [|[|0; 0; 0; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1|]; [|1; 1; 1; 1; 1; 1; 0; 0; 0; 0; 0; 0; 0; 0; 0;|]|]
 
 
 
@@ -409,26 +412,28 @@ let string = "01100100010111"
 
 
 
+(* type char' = Start | Some of char | End *)
 
 
 
 
 
 
+let char_of_charoption = function None -> '-' | Some x -> x
 
 
 
 (* 新しいtrie木を作成 *)
-(* let tree = create ();; *)
+let tree = create ();;
 
 (* "010"をtrie木に追加 *)
-(* let tree = set tree ['0'; '1'; '0'] "value_010";; *)
+let tree = set tree ['0'; '1'; '0'; '$'] 3;;
 
 (* "10"をtrie木に追加 *)
-(* let tree = set tree ['1'; '0'] "value_10";; *)
+let tree = set tree ['1'; '0'; '$'] 2;;
 
 (* "0"をtrie木に追加 *)
-(* let tree = set tree ['0'] "value_0";; *)
+let tree = set tree ['0'; '$'] 1;;
 
 (* 結果を確認するための関数 *)
 let print_tree tree =
@@ -438,8 +443,7 @@ let print_tree tree =
     | Some v -> Printf.printf "Key: %c, Value: %d\n" key v
   ) tree;;
 
-
-let rec print_trie ?(indent=0) tree =
+let rec print_trie_primitive ?(indent=0) tree =
   let indent_str = String.make indent ' ' in
   let print_node node =
     let value_str = 
@@ -447,10 +451,40 @@ let rec print_trie ?(indent=0) tree =
       | None -> -1
       | Some v -> v
     in
+    let key_sym = node.Node.key in
+    Printf.printf "%sKey: %c, Value: %d\n" indent_str key_sym value_str;
+    print_trie_primitive ~indent:(indent + 2) node.Node.children
+  in
+  List.iter print_node tree
+
+let rec print_trie ?(indent=0) tree =
+  let indent_str = String.make indent ' ' in
+  let print_node node =
+    let value_int = 
+      match node.Node.value with
+      | None -> -1
+      | Some v -> v
+    in
     let key_sym = node.Node.key |> fst in
     let key_o_vals = node.Node.key |> snd in
     let key_o_vals_str = Array.fold_left (fun acc x -> acc ^ (string_of_int x)) "" key_o_vals in
-    Printf.printf "%sKey: %c_%s, Value: %d\n" indent_str key_sym key_o_vals_str value_str;
+    Printf.printf "%sKey: %c_%s, Value: %d\n" indent_str key_sym key_o_vals_str value_int;
+    print_trie ~indent:(indent + 2) node.Node.children
+  in
+  List.iter print_node tree
+
+let rec print_trie ?(indent=0) tree =
+  let indent_str = String.make indent ' ' in
+  let print_node node =
+    let key_sym = node.Node.key |> fst |> char_of_charoption in
+    let key_o_vals = node.Node.key |> snd in
+    let key_o_vals_str = Array.fold_left (fun acc x -> acc ^ (string_of_int x)) "" key_o_vals in
+    let value_int =
+      match node.Node.value with
+      | None -> -1
+      | Some v -> v
+    in
+    Printf.printf "%sKey: %c_%s, Value: %d\n" indent_str key_sym key_o_vals_str value_int;
     print_trie ~indent:(indent + 2) node.Node.children
   in
   List.iter print_node tree
@@ -488,10 +522,15 @@ let create_suffix_list string =
   in
   List.rev (List.tl (aux [string] string_list))
 
-let create_suffix_tree string pos =
-  let init_tree: (char, int) Node.t list = create () in
+let create_char_list_with_o_vals o_mat pos l =
+  let o_mat' = transpose o_mat in
+  (* let o_vals = o_mat'.(pos + 1) in *)
+  (None, o_mat'.(pos - 1)) :: List.mapi (fun i -> fun x -> (Some x, o_mat'.(pos + i))) l @ [(None, [||])]
+
+let create_suffix_tree string pos o_mat =
+  let init_tree: ('a, 'b) Node.t list = create () in
   let set_one_suffix tree suffix number =
-    let char_list = suffix |> String.to_seq |> List.of_seq in
+    let char_list = suffix |> String.to_seq |> List.of_seq |> create_char_list_with_o_vals o_mat number in
     set tree char_list number
   in
   let rec eliminate list pos =
@@ -504,6 +543,62 @@ let create_suffix_tree string pos =
   let number_list = List.mapi (fun i v -> i + 1) suffix_list in
   List.fold_left2 (fun acc x y -> set_one_suffix acc x y) init_tree suffix_list number_list
 
+let rec is_last_branch (trie: ('a, 'b) Node.t) =
+  match trie.children with
+  | [] -> false
+  | [child] -> false
+  | _ -> if List.exists is_last_branch trie.children then false else true
+
+(* let prune (trie: ('a, 'b) Node.t list) =
+  let rec prune' (trie: ('a, 'b) Node.t) =
+    match trie.children with
+    | [] -> trie (* 葉ノードなので変更しない *)
+    | [child] ->
+      (* 子ノードが1つだけなので、親ノードと子ノードを結合する *)
+      let child' = prune' child in
+      if is_last_branch child then
+        { key = trie.key; value = child'.value; children = child'.children }
+      else
+        trie
+    | _ ->
+      (* 子ノードが2つ以上あるので、再帰的に子ノードを削減する *)
+      let children' = List.map prune' trie.children in
+      { key = trie.key; value = trie.value; children = children' }
+  in
+  List.map prune' trie *)
+
+(* let prune (trie: ('a, 'b) Node.t list) =
+  let rec prune' (trie: ('a, 'b) Node.t) =
+    if is_last_branch trie then
+      let rec dfs (node: ('a, 'b) Node.t) =
+        match node.children with
+        | [] -> node
+        | [child] ->
+          let child' = dfs child in
+          { Node.key = node.key; value = child'.value; children = child'.children }
+      in
+      let children' = List.map dfs trie.children in
+      { Node.key = trie.key; value = trie.value; children = children' }
+    else
+      let children' = List.map prune' trie.children in
+      { Node.key = trie.key; value = trie.value; children = children' }
+  in
+  List.map prune' trie *)
+
+
+
+
+
+
+
+let () =
+  let trie = create () in
+  let trie = set trie ['k'; 'e'] "value" in
+  let trie = set trie ['k'; 'e'; 'y'; '1'] "value1" in
+  let trie = set trie ['k'; 'e'; 'y'; '2'; '3'] "value2" in
+  let result = is_last_branch (sub_node trie ['k'; 'e'; 'y'; '2'; '3']) in
+  Printf.printf "result: %b\n" result
+
 (* 子が一つのときは枝刈り *)
 
 (* let str = "01100100" *)
@@ -511,15 +606,24 @@ let create_suffix_tree string pos =
 (* let () = List.iter (fun x -> print_string x; print_string "\n") (create_suffix_list str)
 let () = print_int (List.length (create_suffix_list str)) *)
 
-(* let suffix_tree = create_suffix_tree str 8 *)
+(* let suffix_tree = create_suffix_tree string 8 om2 |> prune *)
+
+let suffix_tree = create_suffix_tree string 8 om2
+
 
 (* let () = List.iter (fun x -> print_char x.Node.key; print_int (Option.get x.Node.value)) suffix_tree *)
-(* let () = print_trie suffix_tree *)
+let () = print_trie suffix_tree
+
+let () = print_newline ()
+let () = print_newline ()
+let () = print_newline ()
+let () = print_newline ()
 
 
 
 
-let om2 = [|[|0; 0; 0; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1|]; [|1; 1; 1; 1; 1; 1; 0; 0; 0; 0; 0; 0; 0; 0; 0;|]|]
+
+
 
 
 
@@ -536,14 +640,39 @@ let tree_thesis = set tree_thesis ['1'; '1'] 2 *)
 
 (* let () = print_trie tree_thesis *)
 
-let create_char_list_with_o_vals o_mat pos l =
-  let o_mat' = transpose o_mat in
-  (* let o_vals = o_mat'.(pos + 1) in *)
-  (None, o_mat'.(pos - 1)) :: List.mapi (fun i -> fun x -> (Some x, o_mat'.(pos + i))) l
 
-let a = create_char_list_with_o_vals om2 7 ['0'; '0'; '0']
 
-(* let () = List.iter (fun (sym, o_vals) -> print_char sym; print_char '_'; Array.iter print_int o_vals; print_char ',') a *)
+
+(* let a = create_char_list_with_o_vals om2 7 ['0'; '0'; '0']
+
+let () = List.iter (fun (sym, o_vals) -> 
+  match sym with
+  | Some x ->
+    print_char x; print_char '_'; Array.iter print_int o_vals; print_char ','
+  | None -> print_char '-'; print_char '_'; Array.iter print_int o_vals; print_char ','
+  ) a
+
+let () = print_newline () *)
+
+
+
+
+
+
+
+
+
+
+(* let () = print_trie_primitive (prune tree) *)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -558,7 +687,17 @@ let tree_thesis = set tree_thesis (['1'; '0'; '0'; '1'] |> create_char_list_with
 let tree_thesis = set tree_thesis (['1'; '1'] |> create_char_list_with_o_vals om2 2) 2
 
 
+
 (* let () = print_trie tree_thesis *)
+
+
+let () = print_newline ()
+let () = print_newline ()
+let () = print_newline ()
+let () = print_newline ()
+
+
+(* let () = print_trie (prune tree_thesis) *)
 
 
 
@@ -582,10 +721,10 @@ let o_regex2: o_regex = (Seq (Query (true, 0), Seq (Char '0', Seq (Char '0', Que
 (* let () = print (compile o_regex2) *)
 
 
-let char_of_charoption = function None -> '-' | Some x -> x
 
 
-let bfs_trie (root: (char option * int array, int) Node.t list) str (o_regex: o_regex) oracle_matrix =
+
+let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
   let queue = Queue.create () in
 
   let oracle_matrix = if Array.length oracle_matrix = 0 then [|Array.make ((String.length str) + 1) 0|] else oracle_matrix in
@@ -613,9 +752,10 @@ let bfs_trie (root: (char option * int array, int) Node.t list) str (o_regex: o_
   print_newline ();
   print_newline (); *)
   let init node =
-    match (node.Node.key: char option * int array) with
-    | None, init_o_vals -> 
+    match node.Node.key with
+    | None, init_o_vals ->
       let init_states = initial onfa init_o_vals in
+      (* tupleのfirstをindexにしておくとend pointもわかるのでは？普通のpopl2024のアルゴリズムも同様<-これほんと？ *)
       Queue.push ([], node, init_states) queue;
     | _ -> raise (Failure "init")
   in
@@ -631,7 +771,23 @@ let bfs_trie (root: (char option * int array, int) Node.t list) str (o_regex: o_
       let o_vals = current.Node.key |> snd in
 
       let push_children_to_queue () =
-        if sym <> None then
+        match sym with
+        | None ->
+          List.iter (fun child ->
+            Queue.push ([], child, current_states) queue
+          ) current.Node.children;
+        | Some c ->
+          let next_states = next onfa current_states c o_vals in
+          List.iter (fun child ->
+            Queue.push (path @ [current.Node.key], child, next_states) queue
+          ) current.Node.children;
+        (* | End -> 
+          List.iter (fun child ->
+            Queue.push ([], child, current_states) queue
+          ) current.Node.children; *)
+
+
+        (* if sym <> None then
           let next_states = next onfa current_states (Option.get sym) o_vals in
           List.iter (fun child ->
             Queue.push (path @ [current.Node.key], child, next_states) queue
@@ -639,7 +795,7 @@ let bfs_trie (root: (char option * int array, int) Node.t list) str (o_regex: o_
         else
           List.iter (fun child ->
             Queue.push ([], child, current_states) queue
-          ) current.Node.children;
+          ) current.Node.children; *)
       in
 
       if not (StateSet.disjoint current_states (onfa.final)) then
@@ -708,8 +864,10 @@ let bfs_trie (root: (char option * int array, int) Node.t list) str (o_regex: o_
   tape
 
 
+(* let answer = bfs_trie tree_thesis str o_regex2 om2 *)
 
-let answer = bfs_trie tree_thesis str o_regex2 om2
+let answer = bfs_trie suffix_tree str o_regex2 om2
+
 
 let () = print_newline ()
 let () = Array.iter (fun x -> x |> print_int; print_string ", ") answer
@@ -717,13 +875,12 @@ let () = Array.iter (fun x -> x |> print_int; print_string ", ") answer
 
 
 
-
 let () = print_newline ()
 
 
-let next' = next (compile o_regex2) (StateSet.of_list [0]) '0' [|1;1|]
+(* let next' = next (compile o_regex2) (StateSet.of_list [0]) '0' [|1;1|]
 
-let () = StateSet.iter (fun x -> x |> print_int; print_string ", ") next'
+let () = StateSet.iter (fun x -> x |> print_int; print_string ", ") next' *)
 
 
 
