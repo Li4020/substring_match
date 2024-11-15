@@ -1,3 +1,9 @@
+(menhir
+ (modules regex_parser))
+
+(ocamllex
+ (modules regex_lexer))
+
 (library
  (name lib)
  (libraries))

@@ -1,0 +1,468 @@
+
+** Conflict (shift/reduce) in state 196.
+** Tokens involved: ZERO UPW UPS UPP UPD UPB RBRACK RBRAC NZDIGIT MORE MINUS LPAR LOWX LOWW LOWV LOWU LOWT LOWS LOWR LOWP LOWN LOWK LOWF LOWD LOWB LESS LBRACK LBRAC HAT EXCL EQUAL DOT DOLLAR COMMA COLONS CHAR BACKSL
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+LPAR QMARK COLONS
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+term 
+atom 
+LPAR QMARK COLONS disjunction RPAR 
+                  alternative 
+                  (?)
+
+** In state 196, looking ahead at ZERO, reducing production
+** alternative ->
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+. 
+
+** In state 196, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+patterncharacter 
+decimaldigit 
+. ZERO 
+
+** Conflict (shift/reduce) in state 193.
+** Tokens involved: ZERO UPW UPS UPP UPD UPB RBRACK RBRAC NZDIGIT MORE MINUS LPAR LOWX LOWW LOWV LOWU LOWT LOWS LOWR LOWP LOWN LOWK LOWF LOWD LOWB LESS LBRACK LBRAC HAT EXCL EQUAL DOT DOLLAR COMMA COLONS CHAR BACKSL
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+LPAR QMARK EQUAL
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+term 
+assertion 
+LPAR QMARK EQUAL disjunction RPAR 
+                 alternative 
+                 (?)
+
+** In state 193, looking ahead at ZERO, reducing production
+** alternative ->
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+. 
+
+** In state 193, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+patterncharacter 
+decimaldigit 
+. ZERO 
+
+** Conflict (shift/reduce) in state 190.
+** Tokens involved: ZERO UPW UPS UPP UPD UPB RBRACK RBRAC NZDIGIT MORE MINUS LPAR LOWX LOWW LOWV LOWU LOWT LOWS LOWR LOWP LOWN LOWK LOWF LOWD LOWB LESS LBRACK LBRAC HAT EXCL EQUAL DOT DOLLAR COMMA COLONS CHAR BACKSL
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+LPAR QMARK EXCL
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+term 
+assertion 
+LPAR QMARK EXCL disjunction RPAR 
+                alternative 
+                (?)
+
+** In state 190, looking ahead at ZERO, reducing production
+** alternative ->
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+. 
+
+** In state 190, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+patterncharacter 
+decimaldigit 
+. ZERO 
+
+** Conflict (shift/reduce) in state 187.
+** Tokens involved: ZERO UPW UPS UPP UPD UPB RBRACK RBRAC NZDIGIT MORE MINUS LPAR LOWX LOWW LOWV LOWU LOWT LOWS LOWR LOWP LOWN LOWK LOWF LOWD LOWB LESS LBRACK LBRAC HAT EXCL EQUAL DOT DOLLAR COMMA COLONS CHAR BACKSL
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+LPAR QMARK LESS EQUAL
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+term 
+assertion 
+LPAR QMARK LESS EQUAL disjunction RPAR 
+                      alternative 
+                      (?)
+
+** In state 187, looking ahead at ZERO, reducing production
+** alternative ->
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+. 
+
+** In state 187, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+patterncharacter 
+decimaldigit 
+. ZERO 
+
+** Conflict (shift/reduce) in state 184.
+** Tokens involved: ZERO UPW UPS UPP UPD UPB RBRACK RBRAC NZDIGIT MORE MINUS LPAR LOWX LOWW LOWV LOWU LOWT LOWS LOWR LOWP LOWN LOWK LOWF LOWD LOWB LESS LBRACK LBRAC HAT EXCL EQUAL DOT DOLLAR COMMA COLONS CHAR BACKSL
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+alternative ALT
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative ALT disjunction 
+                alternative 
+                (?)
+
+** In state 184, looking ahead at ZERO, reducing production
+** alternative ->
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+. 
+
+** In state 184, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+patterncharacter 
+decimaldigit 
+. ZERO 
+
+** Conflict (shift/reduce) in state 163.
+** Token involved: LBRAC
+** This state is reached from main after reading:
+
+atom
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+(?)
+
+** In state 163, looking ahead at LBRAC, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom counted_quantifier 
+     . LBRAC decimaldigits RBRAC 
+
+** In state 163, looking ahead at LBRAC, reducing production
+** term -> atom
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with LBRAC
+term // lookahead token is inherited
+atom . 
+
+** Conflict (shift/reduce) in state 82.
+** Tokens involved: ZERO NZDIGIT
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+BACKSL NZDIGIT decimaldigits
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+(?)
+
+** In state 82, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+BACKSL atomescape 
+       decimalescape 
+       NZDIGIT decimaldigits 
+               decimaldigits decimaldigit 
+                             . ZERO 
+
+** In state 82, looking ahead at ZERO, reducing production
+** decimalescape -> NZDIGIT decimaldigits
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+term // lookahead token is inherited
+atom // lookahead token is inherited
+BACKSL atomescape // lookahead token is inherited
+       decimalescape // lookahead token is inherited
+       NZDIGIT decimaldigits . 
+
+** Conflict (shift/reduce) in state 81.
+** Tokens involved: ZERO NZDIGIT
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+BACKSL NZDIGIT
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+(?)
+
+** In state 81, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+BACKSL atomescape 
+       decimalescape 
+       NZDIGIT decimaldigits 
+               decimaldigit 
+               . ZERO 
+
+** In state 81, looking ahead at ZERO, reducing production
+** decimalescape -> NZDIGIT
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+term // lookahead token is inherited
+atom // lookahead token is inherited
+BACKSL atomescape // lookahead token is inherited
+       decimalescape // lookahead token is inherited
+       NZDIGIT . 
+
+** Conflict (shift/reduce) in state 60.
+** Tokens involved: ZERO UPW UPS UPP UPD UPB STAR RPAR RBRACK RBRAC QMARK PLUS NZDIGIT MORE MINUS LPAR LOWX LOWW LOWV LOWU LOWT LOWS LOWR LOWP LOWN LOWK LOWF LOWD LOWB LESS LBRACK LBRAC HAT EXCL EQUAL DOT DOLLAR COMMA COLONS CHAR BACKSL ALT
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+LBRACK HAT
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+term 
+atom 
+characterclass 
+(?)
+
+** In state 60, looking ahead at ZERO, reducing production
+** classatomnodashchar -> HAT
+** is permitted because of the following sub-derivation:
+
+LBRACK classcontents RBRACK 
+       nonemptyclassranges 
+       classatom nonemptyclassrangesnodash // lookahead token appears because nonemptyclassrangesnodash can begin with ZERO
+       classatomnodash // lookahead token is inherited
+       classatomnodashchar // lookahead token is inherited
+       HAT . 
+
+** In state 60, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+LBRACK HAT classcontents RBRACK 
+           nonemptyclassranges 
+           classatom 
+           classatomnodash 
+           classatomnodashchar 
+           decimaldigit 
+           . ZERO 
+
+** Conflict (shift/reduce) in state 30.
+** Tokens involved: ZERO UPW UPS UPP UPD UPB STAR RPAR RBRACK RBRAC QMARK PLUS NZDIGIT MORE MINUS LPAR LOWX LOWW LOWV LOWU LOWT LOWS LOWR LOWP LOWN LOWK LOWF LOWD LOWB LESS LBRACK LBRAC HAT EXCL EQUAL DOT DOLLAR COMMA COLONS CHAR BACKSL ALT
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+LBRACK
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+(?)
+
+** In state 30, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+characterclass 
+LBRACK classcontents RBRACK 
+       nonemptyclassranges 
+       classatom 
+       classatomnodash 
+       classatomnodashchar 
+       decimaldigit 
+       . ZERO 
+
+** In state 30, looking ahead at ZERO, reducing production
+** patterncharacter -> LBRACK
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+term // lookahead token is inherited
+atom // lookahead token is inherited
+patterncharacter // lookahead token is inherited
+LBRACK . 
+
+** Conflict (shift/reduce) in state 15.
+** Tokens involved: ZERO UPW UPS UPP UPD UPB RBRACK RBRAC NZDIGIT MORE MINUS LPAR LOWX LOWW LOWV LOWU LOWT LOWS LOWR LOWP LOWN LOWK LOWF LOWD LOWB LESS LBRACK LBRAC HAT EXCL EQUAL DOT DOLLAR COMMA COLONS CHAR BACKSL
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+LPAR QMARK LESS EXCL
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+term 
+assertion 
+LPAR QMARK LESS EXCL disjunction RPAR 
+                     alternative 
+                     (?)
+
+** In state 15, looking ahead at ZERO, reducing production
+** alternative ->
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+. 
+
+** In state 15, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+patterncharacter 
+decimaldigit 
+. ZERO 
+
+** Conflict (shift/reduce) in state 12.
+** Tokens involved: ZERO UPW UPS UPP UPD UPB RBRACK RBRAC NZDIGIT MORE MINUS LPAR LOWX LOWW LOWV LOWU LOWT LOWS LOWR LOWP LOWN LOWK LOWF LOWD LOWB LESS LBRACK LBRAC HAT EXCL EQUAL DOT DOLLAR COMMA COLONS CHAR BACKSL
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+LPAR
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+term 
+atom 
+LPAR disjunction RPAR 
+     alternative 
+     (?)
+
+** In state 12, looking ahead at ZERO, reducing production
+** alternative ->
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+. 
+
+** In state 12, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+patterncharacter 
+decimaldigit 
+. ZERO 
+
+** Conflict (shift/reduce) in state 0.
+** Tokens involved: ZERO UPW UPS UPP UPD UPB RBRACK RBRAC NZDIGIT MORE MINUS LPAR LOWX LOWW LOWV LOWU LOWT LOWS LOWR LOWP LOWN LOWK LOWF LOWD LOWB LESS LBRACK LBRAC HAT EXCL EQUAL DOT DOLLAR COMMA COLONS CHAR BACKSL
+** The following explanations concentrate on token ZERO.
+** This state is reached from main after reading:
+
+
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+main 
+pattern EOF 
+disjunction 
+alternative 
+(?)
+
+** In state 0, looking ahead at ZERO, reducing production
+** alternative ->
+** is permitted because of the following sub-derivation:
+
+alternative term // lookahead token appears because term can begin with ZERO
+. 
+
+** In state 0, looking ahead at ZERO, shifting is permitted
+** because of the following sub-derivation:
+
+term 
+atom 
+patterncharacter 
+decimaldigit 
+. ZERO 

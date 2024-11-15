@@ -16,7 +16,7 @@ let print onfa =
   onfa.final |> StateSet.iter (fun x -> x |> print_int; print_string ", ") |> print_newline
 
 let rec print_o_regex: o_regex -> unit = function
-  | Eps -> print_char 'E'
+  | Eps -> print_string ""
   | Char a -> print_char a
   | Any -> print_char '.'
   | Query (sgn, o_name) -> print_query (Q (sgn, o_name))
@@ -25,6 +25,20 @@ let rec print_o_regex: o_regex -> unit = function
   | Star a -> print_char '('; print_o_regex a; print_char ')'; print_char '*';
   | Opt a -> print_char '('; print_o_regex a; print_char ')'; print_char '?';
   | Plus a -> print_char '('; print_o_regex a; print_char ')'; print_char '+'
+
+let rec print_regex: regex -> unit = function
+  | Eps -> print_string ""
+  | Char a -> print_char a
+  | Any -> print_char '.'
+  | Alt (a, b) -> print_char '('; print_regex a; print_char '|'; print_regex b; print_char ')'
+  | Seq (a, b) -> print_char '('; print_regex a; print_regex b; print_char ')'
+  | Star a -> print_char '('; print_regex a; print_char ')'; print_char '*';
+  | Opt a -> print_char '('; print_regex a; print_char ')'; print_char '?';
+  | Plus a -> print_char '('; print_regex a; print_char ')'; print_char '+'
+  | PLA a -> print_string "(?="; print_regex a; print_char ')';
+  | PLB a -> print_string "(?<="; print_regex a; print_char ')';
+  | NLA a -> print_string "(?!"; print_regex a; print_char ')';
+  | NLB a -> print_string "(?<!"; print_regex a; print_char ')'
 
 let print_matrix matrix =
   Array.iter (fun x -> Array.iter (fun y -> print_int y; print_string " ") x; print_newline()) matrix

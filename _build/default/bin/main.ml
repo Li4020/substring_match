@@ -4,6 +4,13 @@ open Type;;
 open Print;;
 open Queue;;
 open Trie;;
+open Converter;;
+
+let my_re_str = "(?<=.*11.*)00(?=.*100.*)"
+let my_re = "(?<=.*11.*)00(?=.*100.*)" |> parse_regex
+
+
+let () = my_re |> print_regex |> print_newline
 
 (* type char_option_with_end = None | Some of char | End *)
 
@@ -112,8 +119,14 @@ let rec compile: o_regex -> onfa = function
   | Opt a -> compile (Alt (a, Eps))
   | Plus a -> compile (Seq (a, Star a))
 
+let o_regex: o_regex = (Seq (Query (true, 0), Seq (Char 'b', Seq (Char 'c', Query (true, 1)))))
+
+(* let () = print (compile o_regex) *)
+
 (* .*Q+(0)bcQ+(1) *)
 let o_regex: o_regex = Seq (Star Any, (Seq (Query (true, 0), Seq (Char 'b', Seq (Char 'c', Query (true, 1))))))
+
+
 
 (* let o_regex = Alt (Query (true, 0), Query (true, 1)) *)
 
@@ -245,24 +258,9 @@ let match_onfa dir o_regex str oracle_matrix =
 
 
 
-type regex =
-  | Eps
-  | Char of char
-  | Any
-  | Seq of regex * regex
-  | Alt of regex * regex
-  | Star of regex
-  | Plus of regex
-  | Opt of regex
-  | PLA of regex
-  | NLA of regex
-  | PLB of regex
-  | NLB of regex
-
-
 let o_matrix: int array Dynarray.t ref = ref (Dynarray.create ())
 
-
+let o_regex': o_regex option ref = ref (None)
 let rec eval_aux (regex: regex) str o_arity o_matrix: int * o_regex =
   let set_tape tape =
     Dynarray.add_last !o_matrix tape;
@@ -316,6 +314,7 @@ let rec eval_aux (regex: regex) str o_arity o_matrix: int * o_regex =
 
 and eval dir regex str =
   let (o_arity, o_regex) = eval_aux regex str 0 o_matrix in
+  o_regex' := Some o_regex;
   (* print (compile o_regex); *)
   match_onfa dir o_regex str (Dynarray.to_array !o_matrix)
 
@@ -379,7 +378,11 @@ let om2 = [|[|0; 0; 0; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1; 1|]; [|1; 1; 1; 1; 1; 1;
 
 
 
-(* let () = Array.iter (fun x -> x |> print_int; print_string ", ") (eval true re5 string) |> print_newline *)
+let () = Array.iter (fun x -> x |> print_int; print_string ", ") (eval true my_re string) |> print_newline
+
+let () = print_o_regex (Option.get !o_regex') |> print_newline
+
+let () = print_matrix (Dynarray.to_array !o_matrix)
 
 (* let () = print_endline string *)
 
@@ -567,7 +570,7 @@ let rec is_last_branch (trie: ('a, 'b) Node.t) =
   in
   List.map prune' trie *)
 
-(* let prune (trie: ('a, 'b) Node.t list) =
+let prune (trie: ('a, 'b) Node.t list) =
   let rec prune' (trie: ('a, 'b) Node.t) =
     if is_last_branch trie then
       let rec dfs (node: ('a, 'b) Node.t) =
@@ -583,7 +586,7 @@ let rec is_last_branch (trie: ('a, 'b) Node.t) =
       let children' = List.map prune' trie.children in
       { Node.key = trie.key; value = trie.value; children = children' }
   in
-  List.map prune' trie *)
+  List.map prune' trie
 
 
 
@@ -591,13 +594,13 @@ let rec is_last_branch (trie: ('a, 'b) Node.t) =
 
 
 
-let () =
+(* let () =
   let trie = create () in
   let trie = set trie ['k'; 'e'] "value" in
   let trie = set trie ['k'; 'e'; 'y'; '1'] "value1" in
   let trie = set trie ['k'; 'e'; 'y'; '2'; '3'] "value2" in
   let result = is_last_branch (sub_node trie ['k'; 'e'; 'y'; '2'; '3']) in
-  Printf.printf "result: %b\n" result
+  Printf.printf "result: %b\n" result *)
 
 (* 子が一つのときは枝刈り *)
 
@@ -612,12 +615,12 @@ let suffix_tree = create_suffix_tree string 8 om2
 
 
 (* let () = List.iter (fun x -> print_char x.Node.key; print_int (Option.get x.Node.value)) suffix_tree *)
-let () = print_trie suffix_tree
+(* let () = print_trie suffix_tree *)
 
-let () = print_newline ()
-let () = print_newline ()
-let () = print_newline ()
-let () = print_newline ()
+
+
+
+
 
 
 
@@ -691,10 +694,7 @@ let tree_thesis = set tree_thesis (['1'; '1'] |> create_char_list_with_o_vals om
 (* let () = print_trie tree_thesis *)
 
 
-let () = print_newline ()
-let () = print_newline ()
-let () = print_newline ()
-let () = print_newline ()
+
 
 
 (* let () = print_trie (prune tree_thesis) *)
@@ -721,7 +721,9 @@ let o_regex2: o_regex = (Seq (Query (true, 0), Seq (Char '0', Seq (Char '0', Que
 (* let () = print (compile o_regex2) *)
 
 
-
+let path' = ref 0
+let val_list' = ref []
+let val_list'' = ref []
 
 
 let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
@@ -807,13 +809,16 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
             | { key = _; value = None; children = cs } -> List.concat (List.map dfs cs)
         in
         let value_list = dfs current in
-        List.iter (fun (c, arr) -> print_char (char_of_charoption c); print_string ", ") path;
-        print_newline ();
-        List.iter (fun v -> print_int v; print_string ", ") value_list;
-        print_newline ();
-        print_string "match";
-        print_newline ();
-        List.iter (fun v -> tape.(v) <- 1) value_list
+        List.iter (fun (c, arr) -> print_char (char_of_charoption c);) path;
+        (* print_newline (); *)
+        (* List.iter (fun v -> print_int v; print_string ", ") value_list; *)
+        (* print_newline (); *)
+        (* print_string "match"; *)
+        (* print_newline (); *)
+        path' := List.length path;
+        List.iter (fun v -> tape.(v) <- 1) value_list;
+        val_list' := value_list;
+        val_list'' := List.map (fun x -> (x - !path', x)) !val_list'
       else
         ();
 
@@ -855,9 +860,6 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
 
       StateSet.iter (fun x -> x |> print_int; print_string ", ") current_states;
       print_newline (); *)
-
-      
-
       aux ()
   in
   aux ();
@@ -866,7 +868,13 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
 
 (* let answer = bfs_trie tree_thesis str o_regex2 om2 *)
 
-let answer = bfs_trie suffix_tree str o_regex2 om2
+let answer = bfs_trie tree_thesis str (Option.get !o_regex') (Dynarray.to_array !o_matrix)
+
+
+(* let () = print_int (!path') *)
+(* let answer = bfs_trie suffix_tree str o_regex2 om2 *)
+
+
 
 
 let () = print_newline ()
@@ -877,7 +885,7 @@ let () = Array.iter (fun x -> x |> print_int; print_string ", ") answer
 
 let () = print_newline ()
 
-
+let () = List.iter (fun (start, end_) -> print_string "("; print_int start; print_string ", "; print_int end_; print_string ")"; print_string ", ") !val_list''
 (* let next' = next (compile o_regex2) (StateSet.of_list [0]) '0' [|1;1|]
 
 let () = StateSet.iter (fun x -> x |> print_int; print_string ", ") next' *)
