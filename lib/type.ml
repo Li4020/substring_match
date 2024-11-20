@@ -40,4 +40,3 @@ type onfa = {
   start : StateSet.t;
   final : StateSet.t;
 }
-
