@@ -9,15 +9,20 @@ open Converter;;
 open Onfa;;
 open Suffix_trie;;
 
+let time : (unit -> 'a) -> 'a * float =
+  fun f ->
+    let start = Sys.time () in
+    let res   = f () in
+    let end_  = Sys.time () in
+    (res, end_ -. start)
 
 
-let () = print_newline ()
-let () = print_newline ()
-let () = print_newline ()
 
-let () = print_trie (prune suffix_tree)
+(* let b = is_last_branch (List.nth suffix_tree 2) *)
 
-let () = print_int !counter
+(* let () = print_trie (suffix_tree) *)
+
+(* let () = print_int !counter' *)
 
 
 (* let () = print_newline ()
@@ -26,12 +31,21 @@ let () = print_newline ()
 
 let () = print_trie suffix_tree *)
 
+(* let () = print_endline Sys.argv.(1);; *)
 let str = "01100100010111"
+let str = "11111111111010010101111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
 
+let str = "1111111111101001010111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
 
+let str = "1111111111101001010111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100111111111111111111111111111111111111"
 let my_re_str = "(?<=.*11.*)00(?=.*100.*)"
+let my_re_str = "(?<=.*1111.*)00(?=.*10.*)"
+
 
 let my_re = my_re_str |> parse_regex
+
+
+
 
 
 (* let () = my_re |> print_regex |> print_newline *)
@@ -41,7 +55,9 @@ let my_re = my_re_str |> parse_regex
 (* type char' = Start | Some of char | End *)
 
 
-(* let ans_tape = eval true my_re str *)
+let ans_tape = eval true my_re str
+
+let () = print_float ((snd (time (fun () -> eval true my_re str))) *. 1000.0) |> print_newline
 
 (* let () = Array.iter (fun x -> x |> print_int; print_string ", ") (ans_tape) |> print_newline *)
 
@@ -50,8 +66,9 @@ let my_re = my_re_str |> parse_regex
 (* let () = print_matrix (Dynarray.to_array !o_matrix) *)
 
 
+let o_matrix = (!o_matrix |> Dynarray.to_array)
 
-
+let suffix_tree = create_suffix_tree str (String.length str) o_matrix
 
 
 
@@ -61,6 +78,11 @@ let my_re = my_re_str |> parse_regex
 let path' = ref 0
 let val_list' = ref []
 let val_list'' = ref []
+
+let a': float ref = ref 0.0
+let b' = ref []
+
+let counter = ref 0
 
 let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
   let queue = Queue.create () in
@@ -118,28 +140,31 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
 
       if not (StateSet.disjoint current_states (onfa.final)) then
         let rec dfs (node: ('a, 'b) Node.t) =
+          let () = counter := !counter + 1 in
           match node with
             | { key = _; value = Some v; children = [] } -> [v]
             | { key = _; value = None; children = [] } -> []
             | { key = _; value = Some v; children = cs } -> v :: List.concat (List.map dfs cs)
             | { key = _; value = None; children = cs } -> List.concat (List.map dfs cs)
         in
-        let value_list = dfs current in
-        List.iter (fun (c, arr) -> print_char (char_of_charoption c);) path;
+        let value_list, a = time (fun () -> dfs current) in
+        let () = b' := a :: !b' in
+        (* let () = a' := !a' +. a in *)
+        (* List.iter (fun (c, arr) -> print_char (char_of_charoption c);) path; *)
         path' := List.length path;
         List.iter (fun v -> tape.(v) <- 1) value_list;
         val_list' := value_list;
         val_list'' := List.map (fun x -> (x - !path', x)) !val_list'
       else
-        ();
+        (* (); *)
 
       if current.Node.value <> None then
         let start_pos = Option.get current.Node.value in
-        print_int start_pos;
-        print_newline ();
+        (* print_int start_pos;
+        print_newline (); *)
         let str' = String.sub str (start_pos - 1) ((String.length str) - start_pos + 1) in
-        print_string str';
-        print_newline ();
+        (* print_string str';
+        print_newline (); *)
         let char_list = List.of_seq (String.to_seq str') in
         let j = ref (start_pos) in
         let rec traverse char_list =
@@ -166,25 +191,27 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
   tape
 
 (* let () = Dynarray.remove_last !o_matrix *)
-(* let answer = bfs_trie tree_thesis str (Option.get !o_regex') (!o_matrix |> Dynarray.to_array)
+(* let answer = bfs_trie suffix_tree str (Option.get !o_regex') o_matrix *)
 
-let () = print_newline ()
+(* let () = print_newline ()
 let () = Array.iter (fun x -> x |> print_int; print_string ", ") answer
-let () = print_newline ()
-
-let () = List.iter (fun (start, end_) -> print_string "("; print_int start; print_string ", "; print_int end_; print_string ")"; print_string ", ") !val_list'' *)
+let () = print_newline () *)
 
 
 
+let () = print_float ((snd (time (fun () -> bfs_trie suffix_tree str (Option.get !o_regex') o_matrix))) *. 1000.0)
+
+let () = List.iter (fun (start, end_) -> print_string "("; print_int start; print_string ", "; print_int end_; print_string ")"; print_string ", ") !val_list''
 
 
+let () = print_int (String.length str) |> print_newline
+
+let () = print_float (!a' *. 1000.0) |> print_newline
 
 
+let () = List.iter (fun x -> print_float (x *. 1000.0); print_string ", ") !b'
 
-
-
-
-
+let () = print_int !counter
 
 
 

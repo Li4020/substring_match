@@ -46,29 +46,64 @@ let create_suffix_tree string pos o_mat =
   let number_list = List.mapi (fun i v -> i + 1) suffix_list in
   List.fold_left2 (fun acc x y -> set_one_suffix acc x y) init_tree suffix_list number_list
 
+
+
+
+
+
+
+
+
+
+
+
+  let counter' = ref 0
+
 let rec is_last_branch (trie: ('a, 'b) Node.t) =
+  let () = counter' := !counter' + 1 in
   match trie.children with
   | [] -> false
   | [child] -> false
-  | _ -> if List.exists is_last_branch trie.children then false else true
+  | _ -> if List.exists is_last_branch trie.children then false else (
+  let key_sym = trie.key |> fst |> char_of_charoption in
+  let key_o_vals = trie.key |> snd in
+  let key_o_vals_str = Array.fold_left (fun acc x -> acc ^ (string_of_int x)) "" key_o_vals in
+  Printf.printf "Key: %c_%s\n" key_sym key_o_vals_str;true)
 
 (* let prune (trie: ('a, 'b) Node.t list) =
   let rec prune' (trie: ('a, 'b) Node.t) =
     match trie.children with
-    | [] -> trie (* 葉ノードなので変更しない *)
+    | [] -> trie
     | [child] ->
-      (* 子ノードが1つだけなので、親ノードと子ノードを結合する *)
       let child' = prune' child in
-      if is_last_branch child then
-        { key = trie.key; value = child'.value; children = child'.children }
+      child'
+    | h :: t ->
+      if is_last_branch trie then
+        let rec dfs (node: ('a, 'b) Node.t) =
+          match node.children with
+          | [] -> node
+          | [child] ->
+            let child' = child |> prune' |> dfs in
+            let child' = child |> dfs in
+            { Node.key = node.key; value = child'.value; children = child'.children }
+        in
+        { Node.key = node.key; value = child'.value; children = (dfs h) :: prune' t}
       else
-        trie
-    | _ ->
-      (* 子ノードが2つ以上あるので、再帰的に子ノードを削減する *)
-      let children' = List.map prune' trie.children in
-      { key = trie.key; value = trie.value; children = children' }
+
+
   in
   List.map prune' trie *)
+
+
+(* let rec prune (trie: ('a, 'b) Node.t list) =
+  match trie with
+  | [] -> []
+  | h :: t ->
+    if is_last_branch h then
+      
+    else
+      h :: prune t *)
+
 
 let counter = ref 0
 
@@ -83,25 +118,29 @@ let prune (trie: ('a, 'b) Node.t list) =
         | [] -> node
         | [child] ->
           let child' = child |> prune' |> dfs in
+          let child' = child |> dfs in
           { Node.key = node.key; value = child'.value; children = child'.children }
       in
-      let key_sym = trie.key |> fst |> char_of_charoption in
+      (* let key_sym = trie.key |> fst |> char_of_charoption in
       let key_o_vals = trie.key |> snd in
       let key_o_vals_str = Array.fold_left (fun acc x -> acc ^ (string_of_int x)) "" key_o_vals in
-      let () = Printf.printf "Key: %c_%s\n" key_sym key_o_vals_str in
+      let () = Printf.printf "Key: %c_%s\n" key_sym key_o_vals_str in *)
       let children' = List.map (fun x -> x |> dfs) trie.children in
       { Node.key = trie.key; value = trie.value; children = children' }
     else
       (* let () = Format.print_bool (is_last_branch trie) in *)
       (* let () = print_trie trie.children in *)
-      let key_sym = trie.key |> fst |> char_of_charoption in
+      (* let key_sym = trie.key |> fst |> char_of_charoption in
       let key_o_vals = trie.key |> snd in
       let key_o_vals_str = Array.fold_left (fun acc x -> acc ^ (string_of_int x)) "" key_o_vals in
-      let () = Printf.printf "Key: %c_%s\n" key_sym key_o_vals_str in
+      let () = Printf.printf "Key: %c_%s\n" key_sym key_o_vals_str in *)
       let children' = List.map prune' trie.children in
       { Node.key = trie.key; value = trie.value; children = children' }
   in
   List.map prune' trie
+
+
+
 
 (* let () =
   let trie = create () in
@@ -111,7 +150,7 @@ let prune (trie: ('a, 'b) Node.t list) =
   let result = is_last_branch (sub_node trie ['k'; 'e'; 'y'; '2'; '3']) in
   Printf.printf "result: %b\n" result *)
 
-let suffix_tree = create_suffix_tree str 8 om2
+(* let suffix_tree = create_suffix_tree str 8 om2 *)
 
 (* let () = print_trie_primitive (prune tree) *)
 
@@ -146,3 +185,27 @@ let tree_thesis = set tree_thesis (['0'; '1'; '1'] |> create_char_list_with_o_va
 let tree_thesis = set tree_thesis (['1'; '0'; '0'; '0'] |> create_char_list_with_o_vals om2 6) 6
 let tree_thesis = set tree_thesis (['1'; '0'; '0'; '1'] |> create_char_list_with_o_vals om2 3) 3
 let tree_thesis = set tree_thesis (['1'; '1'] |> create_char_list_with_o_vals om2 2) 2
+
+
+
+
+
+
+
+
+
+
+(* Patricia木のデータ構造 *)
+type ('a,'b) patricia = 
+  | PatriciaNode of 'a * 'b option * ('a,'b) patricia list
+
+(* トライからPatricia木を作る関数 *)
+let trie_to_patricia (trie: ('a, 'b) Node.t) : ('a,'b) patricia =
+  let rec aux (trie: ('a, 'b) Node.t) : ('a,'b) patricia =
+    match trie.children with
+    | [] -> PatriciaNode (trie.key, trie.value, [])
+    | children ->
+       let patricia_children = List.map aux children in
+       PatriciaNode (trie.key, trie.value, patricia_children)
+  in
+  aux trie
