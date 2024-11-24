@@ -202,6 +202,8 @@ let match_onfa dir o_regex str oracle_matrix =
   tape
 
 let o_matrix: int array Dynarray.t ref = ref (Dynarray.create ())
+let o_matrix': int array Dynarray.t ref = ref (Dynarray.create ())
+
 let o_regex': o_regex option ref = ref (None)
 
 let rec eval_aux (regex: regex) str o_arity o_matrix: int * o_regex =
