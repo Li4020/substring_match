@@ -5,7 +5,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 # ディレクトリパスを指定
-dir_path = '/Users/tomiiekoichiro/output_dir2'
+dir_path = '/Users/tomiiekoichiro/output_dir3'
 
 # ファイル名から<number1>を取得するための正規表現
 pattern = r'output(\d+)_(\d+).txt'
@@ -192,11 +192,44 @@ average_dict = {k: v for k, v in average_dict.items() if k < 5000}
 x = np.array(list(average_dict.keys()))
 y = np.array([sum(value) / len(value) for value in average_dict.values()])
 
-x = x[x < 5000]
-y = y[x < 5000]
+x = x[x <= 5000]
+y = y[x <= 5000]
 
 
+# 関数y = k(x^a)
+def func(x, k, a):
+    return k * x ** a
 
+# aの初期値を指定
+p0 = [1, 1.5]  # kの初期値は1、aの初期値は1.5
+
+# aの境界を指定
+bounds = ([0, 0], [10, 2])  # kの境界は(0, 10)、aの境界は(1, 5)
+
+# kとaを最適化
+# popt, pcov = curve_fit(func, x, y, p0=p0, bounds=bounds)
+
+
+# # kとaを最適化
+popt, pcov = curve_fit(func, x, y)
+
+# 決定係数を計算
+y_pred = func(x, *popt)
+y_mean = np.mean(y)
+ss_res = np.sum((y - y_pred) ** 2)
+ss_tot = np.sum((y - y_mean) ** 2)
+r_squared = 1 - (ss_res / ss_tot)
+
+# グラフを表示
+plt.scatter(x, y)
+plt.plot(x, y_pred, "r--", label="y = %.2f(x^%.2f)" % tuple(popt))
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Scatter Plot and Approximation Curve")
+plt.legend()
+plt.show()
+
+print("決定係数: %.2f" % r_squared)
 
 
 

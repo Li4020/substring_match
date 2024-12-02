@@ -60,10 +60,19 @@ let ans_tape' = eval true my_re' str
 
 let o_matrix = (!Onfa.o_matrix |> Dynarray.to_array)
 
-let ans_tape' = match_onfa true (Option.get !o_regex') str o_matrix
-let () = Array.iter (fun x -> x |> print_int; print_string ", ") (ans_tape') |> print_newline
 
-let () = print_float ((snd (time (fun () -> match_onfa true (Option.get !o_regex') str o_matrix)))) |> print_newline
+let answer = time (fun () -> match_onfa true (Option.get !o_regex') str o_matrix)
+
+(* let ans_tape' = match_onfa true (Option.get !o_regex') str o_matrix *)
+(* let () = Array.iter (fun x -> x |> print_int; print_string ", ") (ans_tape') |> print_newline *)
+
+
+let () = Array.iter (fun x -> x |> print_int; print_string ", ") (fst answer) |> print_newline
+
+
+
+
+let () = print_float (snd answer) |> print_newline
 
 
 let () = Onfa.o_matrix := (Dynarray.create ())
@@ -82,9 +91,11 @@ let ans_tape = eval true my_re str
 
 let o_matrix = (!Onfa.o_matrix |> Dynarray.to_array)
 
-let suffix_tree = create_suffix_tree str (String.length str) o_matrix
+let suffix_tree_with_time = (fun () -> create_suffix_tree str (String.length str) o_matrix) |> time
 
+let suffix_tree = fst suffix_tree_with_time
 
+(* let () = print_float (snd suffix_tree_with_time) |> print_newline *)
 
 
 
@@ -117,6 +128,7 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
   List.iter init root;
 
   let rec aux () =
+    (* let () = counter := !counter + 1 in *)
     if Queue.is_empty queue then
       ()
     else
@@ -196,22 +208,26 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
         in
         traverse char_list
       else
-        ();
+        push_children_to_queue ();
+        (* (); *)
 
-      push_children_to_queue ();
+      (* push_children_to_queue (); *)
       aux ()
   in
   aux ();
   tape
 
+
+let answer = time (fun () -> bfs_trie suffix_tree str (Option.get !o_regex') o_matrix)
+
+
 (* let () = Dynarray.remove_last !o_matrix *)
-let answer = bfs_trie suffix_tree str (Option.get !o_regex') o_matrix
+(* let answer = bfs_trie suffix_tree str (Option.get !o_regex') o_matrix *)
 
 
 let () = print_newline ()
-let () = Array.iter (fun x -> x |> print_int; print_string ", ") answer
+let () = Array.iter (fun x -> x |> print_int; print_string ", ") (fst answer)
 let () = print_newline ()
-
 
 
 
@@ -223,7 +239,11 @@ let sum = List.fold_left (+.) 0.0 !b'
 
 (* let () = print_newline () *)
 
-let () = print_float (((snd (time (fun () -> bfs_trie suffix_tree str (Option.get !o_regex') o_matrix))) -. sum))
+let () = print_float ((snd answer) -. sum)
+
+(* let () = print_newline () *)
+(* let () = print_int (!counter) *)
+
 
 (* let () = List.iter (fun (start, end_) -> print_string "("; print_int start; print_string ", "; print_int end_; print_string ")"; print_string ", ") !val_list'' *)
 
