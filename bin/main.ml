@@ -37,14 +37,19 @@ let str = Sys.argv.(1)
 
 
 let my_re_str = "(?<=.*11.*)00(?=.*100.*)"
+
+
 (* let my_re_str = "(?<=.*1111.*)00(?=.*10.*)" *)
 
 let my_re_str' = ".*(?<=.*11.*)00(?=.*100.*)"
+(* let my_re_str' = ".*1" *)
+
+(* let my_re_str = "1" *)
+
 
 let my_re = my_re_str |> parse_regex
 
 let my_re' = my_re_str' |> parse_regex
-
 
 
 
@@ -67,12 +72,20 @@ let answer = time (fun () -> match_onfa true (Option.get !o_regex') str o_matrix
 (* let () = Array.iter (fun x -> x |> print_int; print_string ", ") (ans_tape') |> print_newline *)
 
 
+(* let onfa = !Onfa.o_regex' |> Option.get |> compile
+let state = Onfa.next onfa (StateSet.of_list [0]) '1' [||]
+let () = StateSet.is_empty state |> print_bool *)
+
+
 let () = Array.iter (fun x -> x |> print_int; print_string ", ") (fst answer) |> print_newline
-
-
-
-
 let () = print_float (snd answer) |> print_newline
+
+
+
+
+
+
+
 
 
 let () = Onfa.o_matrix := (Dynarray.create ())
@@ -86,19 +99,27 @@ let ans_tape = eval true my_re str
 
 (* let () = print_o_regex (Option.get !o_regex') |> print_newline *)
 
-(* let () = print_matrix (Dynarray.to_array !o_matrix) *)
+(* let () = print_matrix (Dynarray.to_array !Onfa.o_matrix) *)
+
+(* let () = Dynarray.is_empty !Onfa.o_matrix |> print_bool *)
 
 
-let o_matrix = (!Onfa.o_matrix |> Dynarray.to_array)
+let o_matrix = if Dynarray.is_empty !Onfa.o_matrix then [|Array.make ((String.length str) + 1) 0|] else (!Onfa.o_matrix |> Dynarray.to_array)
 
 let suffix_tree_with_time = (fun () -> create_suffix_tree str (String.length str) o_matrix) |> time
 
 let suffix_tree = fst suffix_tree_with_time
 
+(* 1万文字で10秒ぐらい *)
 (* let () = print_float (snd suffix_tree_with_time) |> print_newline *)
 
 
+(* let rec count_nodes = function
+  | [] -> 0
+  | node :: nodes ->
+    1 + count_nodes node.Node.children + count_nodes nodes
 
+let () = print_float (time (fun () -> count_nodes suffix_tree) |> snd) *)
 
 let path' = ref 0
 let val_list' = ref []
@@ -121,17 +142,21 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
     match node.Node.key with
     | None, init_o_vals ->
       let init_states = initial onfa init_o_vals in
-      Queue.push ([], node, init_states) queue;
+      if not (StateSet.disjoint init_states (onfa.final)) then tape.(0) <- 1 else ();
+      let ans = time (fun () -> Queue.push ([], node, init_states) queue) in
+      (* print_float (snd ans); *)
+      ()
     | _ -> raise (Failure "init")
   in
 
   List.iter init root;
 
   let rec aux () =
-    (* let () = counter := !counter + 1 in *)
     if Queue.is_empty queue then
       ()
     else
+      (* let () = counter := !counter + 1 in *)
+
       let (path, current, current_states) = Queue.pop queue in
       let sym = current.Node.key |> fst in
       let o_vals = current.Node.key |> snd in
@@ -164,9 +189,13 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
           ) current.Node.children; *)
       in
 
+      if StateSet.is_empty current_states then
+        aux ()
+      else
+
       if not (StateSet.disjoint current_states (onfa.final)) then
+        let () = counter := !counter + 1 in
         let rec dfs (node: ('a, 'b) Node.t) =
-          let () = counter := !counter + 1 in
           match node with
             | { key = _; value = Some v; children = [] } -> [v]
             | { key = _; value = None; children = [] } -> []
@@ -185,6 +214,7 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
         (* (); *)
 
       if current.Node.value <> None then
+        (* let () = counter := !counter + 1 in *)
         let start_pos = Option.get current.Node.value in
         (* print_int start_pos;
         print_newline (); *)
@@ -208,11 +238,13 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
         in
         traverse char_list
       else
+        (* counter := !counter + 1; *)
         push_children_to_queue ();
+        aux ()
         (* (); *)
 
       (* push_children_to_queue (); *)
-      aux ()
+      
   in
   aux ();
   tape
@@ -235,14 +267,18 @@ let () = print_newline ()
 
 let sum = List.fold_left (+.) 0.0 !b'
 
-(* let () = print_float (sum *. 1000.0) *)
+(* let () = print_float (sum)
 
+let () = print_newline () *)
+
+(* let () = print_float ((snd answer) -. sum) *)
 (* let () = print_newline () *)
 
-let () = print_float ((snd answer) -. sum)
+let () = print_float ((snd answer) -. 0.0)
 
-(* let () = print_newline () *)
-(* let () = print_int (!counter) *)
+
+(* let () = print_newline ()
+let () = print_int (!counter) *)
 
 
 (* let () = List.iter (fun (start, end_) -> print_string "("; print_int start; print_string ", "; print_int end_; print_string ")"; print_string ", ") !val_list'' *)
