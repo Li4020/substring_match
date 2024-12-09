@@ -267,14 +267,14 @@ let () = print_newline ()
 
 let sum = List.fold_left (+.) 0.0 !b'
 
-(* let () = print_float (sum)
+let () = print_float (sum)
 
-let () = print_newline () *)
+let () = print_newline ()
 
-(* let () = print_float ((snd answer) -. sum) *)
+let () = print_float ((snd answer) -. sum)
 (* let () = print_newline () *)
 
-let () = print_float ((snd answer) -. 0.0)
+(* let () = print_float ((snd answer) -. 0.0) *)
 
 
 (* let () = print_newline ()
