@@ -8,6 +8,7 @@ open Trie;;
 open Converter;;
 open Onfa;;
 open Suffix_trie;;
+open Suffix_tree;;
 
 let time : (unit -> 'a) -> 'a * float =
   fun f ->
@@ -15,6 +16,18 @@ let time : (unit -> 'a) -> 'a * float =
     let res   = f () in
     let end_  = Sys.time () in
     (res, end_ -. start)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

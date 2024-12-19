@@ -1,6 +1,8 @@
 (* open Lib.Trie;; *)
 open Trie;;
+open Suffix_tree;;
 
+(* 
 (* 新しいtrie木を作成 *)
 let tree = create ();;
 
@@ -22,4 +24,4 @@ let print_tree tree =
   ) tree;;
 
 (* trie木を表示 *)
-print_tree tree;;
+print_tree tree;; *)

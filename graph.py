@@ -5,7 +5,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 # ディレクトリパスを指定
-dir_path = '/Users/tomiiekoichiro/output_dir10'
+dir_path = '/Users/tomiiekoichiro/output_10000_50000'
 
 # ファイル名から<number1>を取得するための正規表現
 pattern = r'output(\d+)_(\d+).txt'
