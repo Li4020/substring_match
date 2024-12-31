@@ -1,5 +1,5 @@
 module SuffixTree = struct
-  type char_info = char option * int array
+  type char_info = char * int array
   type data = char_info list
 
   type edge = {
@@ -8,7 +8,7 @@ module SuffixTree = struct
   }
 
   type node = {
-    children : (char option, edge * node) Hashtbl.t;
+    children : (char, edge * node) Hashtbl.t;
   }
 
   type t = {

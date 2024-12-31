@@ -9,6 +9,7 @@ open Converter;;
 open Onfa;;
 open Suffix_trie;;
 open Suffix_tree;;
+open Suffix_tree3;;
 
 
 
@@ -56,23 +57,53 @@ let create_data (s : string) (matrix : int array array) =
   (None, matrix.(0)) :: aux (n - 1) []
 
 
+let create_data (s : string) (matrix : int array array) =
+  let n = String.length s in
+  (* let () = print_int (Array.length matrix) in *)
+  if n <> Array.length matrix - 1 then
+    invalid_arg "The length of the string must match the number of rows in the matrix.";
+  let rec aux i acc =
+    if i < 0 then acc
+    else aux (i - 1) ((s.[i], matrix.(i + 1)) :: acc)
+  in
+  ('-', matrix.(0)) :: aux (n - 1) []
 
-
-let complex_data = [
+(* let complex_data = [
   (None, [|1; 2|]);
   (Some 'y', [|3; 4|]);
   (Some 'z', [|5; 6; 7|]);
   (Some 'x', [|8|]);
+  (Some 'y', [|3; 4|]);
+  (Some 'z', [|5; 6; 7|]);
+  (Some 'x', [|8|]);
+  (Some 'y', [|3; 4|]);
+  (Some 'z', [|5; 6; 7|]);
+  (Some 'x', [|8|]);
+  (Some 'y', [|3; 4|]);
+  (Some 'z', [|5; 6; 7|]);
+  (Some 'x', [|8|]);
+  (Some 'y', [|3; 4|]);
+  (Some 'z', [|5; 6; 7|]);
+  (Some 'x', [|8|]);
+] *)
+
+let complex_data = [
+  ('a', [|1; 2; 3|]);
+  ('b', [|4; 5; 6|]);
+  ('c', [|7; 8; 9|]);
+  ('a', [|10; 11; 12|]);
+  ('b', [|13; 14; 15|]);
+  ('c', [|7; 8; 9|]);
+  ('a', [|10; 11; 12|]);
+  ('b', [|13; 14; 15|]);
 ]
 
 
-
-
-let tr = SuffixTree.build complex_data
-
+let tr = SuffixTree3.build complex_data
 
 
 
+let () = SuffixTree3.print_tree_intervals tr
 
 
 
@@ -83,17 +114,38 @@ let data = create_data str (transpose o_matrix)
 let () = print_int (List.length data)
 
 (* let () = List.iter (fun x -> print_char (char_of_charoption (fst x)) ; print_string ", ") data *)
-let () = List.iter (fun x -> print_char (char_of_charoption (fst x)) ; 
-Array.iter (fun y -> print_int y) (snd x);
-print_string ", ") data
+(* let () = List.iter (fun x -> print_char (char_of_charoption (fst x)) ; Array.iter (fun y -> print_int y) (snd x); print_string ", ") data *)
 
 
 
-let trrrrr = SuffixTree.build data
-let suffix_tree_with_time = (fun () -> SuffixTree.build data) |> time
 
 
-let suffix_tree = fst suffix_tree_with_time
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let trrrrr = SuffixTree3.build data
+
+let () = SuffixTree3.print_tree_intervals trrrrr
+
+(* let suffix_tree_with_time = (fun () -> SuffixTree.build data) |> time *)
+
+
+(* let suffix_tree = fst suffix_tree_with_time *)
 
 
 
