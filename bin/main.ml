@@ -36,12 +36,15 @@ let str = "01100100010111"
 let str = Sys.argv.(1)
 
 
-let my_re_str = "(?<=.*11.*)00(?=.*100.*)"
+let my_re_str = "(?:a*)*(?=.*b.*)"
+
+
 
 
 (* let my_re_str = "(?<=.*1111.*)00(?=.*10.*)" *)
 
-let my_re_str' = ".*(?<=.*11.*)00(?=.*100.*)"
+let my_re_str' = ".*(?:a*)*(?=.*b.*)"
+
 (* let my_re_str' = ".*1" *)
 
 (* let my_re_str = "1" *)
@@ -76,10 +79,10 @@ let answer = time (fun () -> match_onfa true (Option.get !o_regex') str o_matrix
 let state = Onfa.next onfa (StateSet.of_list [0]) '1' [||]
 let () = StateSet.is_empty state |> print_bool *)
 
-
+(* ===================================
 let () = Array.iter (fun x -> x |> print_int; print_string ", ") (fst answer) |> print_newline
 let () = print_float (snd answer) |> print_newline
-
+=================================== *)
 
 
 
@@ -162,6 +165,7 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
       let o_vals = current.Node.key |> snd in
 
       let push_children_to_queue () =
+        let () =counter := !counter + 1 in
         match sym with
         | None ->
           List.iter (fun child ->
@@ -170,7 +174,8 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
         | Some c ->
           let next_states = next onfa current_states c o_vals in
           List.iter (fun child ->
-            Queue.push (path @ [current.Node.key], child, next_states) queue
+            (* Queue.push (path @ [current.Node.key], child, next_states) queue *)
+            Queue.push ([], child, next_states) queue
           ) current.Node.children;
         (* | End -> 
           List.iter (fun child ->
@@ -194,7 +199,7 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
       else
 
       if not (StateSet.disjoint current_states (onfa.final)) then
-        let () = counter := !counter + 1 in
+        (* let () = counter := !counter + 1 in *)
         let rec dfs (node: ('a, 'b) Node.t) =
           match node with
             | { key = _; value = Some v; children = [] } -> [v]
@@ -214,7 +219,9 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
         (* (); *)
 
       if current.Node.value <> None then
-        (* let () = counter := !counter + 1 in *)
+        let () = counter := !counter + 1 in
+
+        (* let () = counter := !counter + 1 in
         let start_pos = Option.get current.Node.value in
         (* print_int start_pos;
         print_newline (); *)
@@ -236,7 +243,8 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
               j := !j + 1;
               traverse t
         in
-        traverse char_list
+        traverse char_list *)
+        ()
       else
         (* counter := !counter + 1; *)
         push_children_to_queue ();
@@ -257,9 +265,11 @@ let answer = time (fun () -> bfs_trie suffix_tree str (Option.get !o_regex') o_m
 (* let answer = bfs_trie suffix_tree str (Option.get !o_regex') o_matrix *)
 
 
-let () = print_newline ()
-let () = Array.iter (fun x -> x |> print_int; print_string ", ") (fst answer)
-let () = print_newline ()
+(* let () = print_newline () *)
+(* ====================================== *)
+(* let () = Array.iter (fun x -> x |> print_int; print_string ", ") (fst answer) *)
+(* ======================================== *)
+(* let () = print_newline () *)
 
 
 
@@ -267,17 +277,19 @@ let () = print_newline ()
 
 let sum = List.fold_left (+.) 0.0 !b'
 
-(* let () = print_float (sum)
+(* let () = print_float (sum) *)
 
-let () = print_newline () *)
+(* let () = print_newline () *)
 
 let () = print_float ((snd answer) -. sum)
 let () = print_newline ()
 
-let () = print_float ((snd answer) -. 0.0)
-let () = print_newline ()
+(* let () = print_int (!counter) *)
 
-let () = print_float (snd suffix_tree_with_time) |> print_newline
+(* let () = print_float ((snd answer) -. 0.0)
+let () = print_newline () *)
+
+(* let () = print_float (snd suffix_tree_with_time) |> print_newline *)
 
 
 

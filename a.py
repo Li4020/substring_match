@@ -1,11 +1,38 @@
-import matplotlib.pyplot as plt
-import numpy as np
+import re
+import sys
+import time
 
-# 2019年の東京の最高気温 (h) と最低気温 (l) の月ごとの平均
-X = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-H = [10.3,11.6,15.4,19.0,25.3,25.8,27.5,32.8,29.4,23.3,17.7,12.6]
-L = [1.4,3.3,6.2,9.2,15.3,18.5,21.6,25.2,21.7,16.4,9.3,5.2]
+def find_all_overlapping_matches(pattern, string):
+    matches = []
+    pos = 0
+    while pos < len(string):
+        match = re.search(pattern, string[pos:])
+        if match:
+            start_pos = pos + match.start()
+            matches.append(start_pos)
+            # 次の検索を1文字進めることでオーバーラップを可能にする
+            pos = start_pos + 1
+        else:
+            break
+    return matches
 
-fig, ax = plt.subplots()
-ax.plot(X, H)
-plt.show()
+def main():
+    if len(sys.argv) != 2:
+        print("使用方法: python script.py <入力文字列>")
+        sys.exit(1)
+    
+    input_string = sys.argv[1]
+    regex = r"(?=.*a.*)(?=.*b.*)"
+    
+    start_time = time.perf_counter()
+    result = find_all_overlapping_matches(regex, input_string)
+    end_time = time.perf_counter()
+    
+    elapsed_time = end_time - start_time
+    
+    # print("オーバーラップするマッチの開始位置:", result)
+    # print(f"マッチングにかかった時間: {elapsed_time:.6f} 秒")
+    print(elapsed_time)
+
+if __name__ == "__main__":
+    main()
