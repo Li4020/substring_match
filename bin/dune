@@ -6,3 +6,7 @@
 (executable
  (name popl)
  (libraries lib))
+
+(executable
+ (name suf)
+ (libraries lib))

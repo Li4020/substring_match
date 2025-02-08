@@ -63,11 +63,9 @@ let my_re' = my_re_str' |> parse_regex
 
 (* type char' = Start | Some of char | End *)
 
-
 let ans_tape' = eval true my_re' str
 
 let o_matrix = (!Onfa.o_matrix |> Dynarray.to_array)
-
 
 let answer = time (fun () -> match_onfa true (Option.get !o_regex') str o_matrix)
 
@@ -165,8 +163,7 @@ let bfs_trie (root: ('a, 'b) Node.t list) str (o_regex: o_regex) oracle_matrix =
       let o_vals = current.Node.key |> snd in
 
       let push_children_to_queue () =
-        let () =counter := !counter + 1 in
-        match sym with
+        let () =counter := !counter + 1 in match sym with
         | None ->
           List.iter (fun child ->
             Queue.push ([], child, current_states) queue
@@ -333,7 +330,7 @@ let () = print (compile o_regex)
 
 (* let () = StateSet.iter (fun x -> x |> print_int; print_string ", ") (next (compile o_regex) (StateSet.of_list [0]) 'b' [|1;0|]) *)
 
-let () = print_matrix (transpose oracle_matrix)
+“let () = print_matrix (transpose oracle_matrix)
 
 let () = print_o_regex (reverse_o_regex o_regex); print_newline ()
 
