@@ -32,19 +32,29 @@ let () = print_newline ()
 let () = print_trie suffix_tree *)
 
 (* let () = print_endline Sys.argv.(1);; *)
-let str = "01100100010111"
+(* let str = "01100100010111" *)
 let str = Sys.argv.(1)
 
 
-let my_re_str = "(?:a*)*(?=.*b.*)"
+(* let my_re_str = "(?:a*)*(?=.*b.*)" *)
 
+(* let my_re_str = Sys.argv.(2) *)
 
+let my_re_str = "(?=.*b.*)(?!=.*a.*)(?<=.*a.*)(?<!.*a.*)"
+
+(* let my_re_str = "(?<=.*1111.*)00(?=.*10.*)" *)
+
+(* let my_re_str = ".*(?:a*)*(?=.*b.*)" *)
+
+(* let my_re_str = ".*1" *)
+
+(* let my_re_str = "1" *)
 
 
 (* let my_re_str = "(?<=.*1111.*)00(?=.*10.*)" *)
 
-let my_re_str' = ".*(?:a*)*(?=.*b.*)"
-
+(* let my_re_str' = ".*(?:a*)*(?=.*b.*)" *)
+let my_re_str' = ".*" ^ my_re_str
 (* let my_re_str' = ".*1" *)
 
 (* let my_re_str = "1" *)
@@ -267,9 +277,9 @@ let answer = time (fun () -> bfs_trie suffix_tree str (Option.get !o_regex') o_m
 
 (* let () = print_newline () *)
 (* ====================================== *)
-(* let () = Array.iter (fun x -> x |> print_int; print_string ", ") (fst answer) *)
+let () = Array.iter (fun x -> x |> print_int; print_string ", ") (fst answer)
 (* ======================================== *)
-(* let () = print_newline () *)
+let () = print_newline ()
 
 
 

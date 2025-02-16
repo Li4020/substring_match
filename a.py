@@ -22,7 +22,7 @@ def main():
         sys.exit(1)
     
     input_string = sys.argv[1]
-    regex = r"(?=.*a.*)(?=.*b.*)"
+    regex = r"(?=.*b.*)(?!=.*a.*)(?<=a)(?<!a)"
     
     start_time = time.perf_counter()
     result = find_all_overlapping_matches(regex, input_string)

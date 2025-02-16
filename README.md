@@ -10,3 +10,6 @@
   - ocaml-re-nfa
     - `opam pin add re-nfa https://github.com/terauchi-lab/ocaml-re-nfa.git`← 一応これでやった
     - `opam pin add re-nfa https://github.com/yallop/ocaml-re-nfa.git`← 元はこっち
+
+## 使用法
+`./_build/default/bin/main.exe "$(cat <file_name>)" "$(cat <regex>)"`
